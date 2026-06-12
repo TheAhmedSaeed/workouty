@@ -7,6 +7,37 @@ import { uid } from './utils';
  * in a fixed schema, the user pastes it back, and we import it as a template.
  */
 
+/**
+ * The plan exchange format, shown to the user so they can ask any AI:
+ * "give me a workout plan in exactly this format".
+ */
+export const PLAN_FORMAT_EXAMPLE = `{
+  "name": "My Plan",
+  "description": "optional one-line description",
+  "days": [
+    {
+      "name": "Push",
+      "exercises": [
+        { "name": "Bench Press (Barbell)", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "name": "Lateral Raise (Dumbbell)", "sets": 3, "repsMin": 10, "repsMax": 15 }
+      ]
+    },
+    {
+      "name": "Pull",
+      "exercises": [
+        { "name": "Lat Pulldown", "sets": 3, "repsMin": 8, "repsMax": 12 }
+      ]
+    }
+  ]
+}`;
+
+/** Short instruction + format, ready to paste into any AI chat. */
+export function buildFormatInstruction(): string {
+  return `Give me the workout plan as a single JSON object in exactly this format (reply with only the JSON):
+
+${PLAN_FORMAT_EXAMPLE}`;
+}
+
 export function buildAIPrompt(exercises: Exercise[], userWishes: string): string {
   const names = exercises.map((e) => e.name).join('; ');
   return `You are a certified strength coach. Create a workout plan for me.

@@ -8,6 +8,7 @@ import { formatDate } from '../lib/utils';
 import { TemplateEditor } from './TemplateEditor';
 import { GeneratorWizard } from './GeneratorWizard';
 import { AIImportModal } from './AIImportModal';
+import { ImportPlanModal } from './ImportPlanModal';
 
 export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const { state, getExercise, startWorkout, startEmptyWorkout, deleteTemplate } =
@@ -16,6 +17,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const [editing, setEditing] = useState<Template | 'new' | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [coverageFor, setCoverageFor] = useState<Template | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Template | null>(null);
 
@@ -149,6 +151,20 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
             className="card clickable"
             onClick={() => {
               setNewPlanOpen(false);
+              setImportOpen(true);
+            }}
+          >
+            <div style={{ fontWeight: 700 }}>📥 Import / paste JSON</div>
+            <div className="muted">
+              Already have a plan as JSON? Paste it or upload a file. You can
+              copy the format and give it to any AI: “give me the exercises in
+              this format”.
+            </div>
+          </div>
+          <div
+            className="card clickable"
+            onClick={() => {
+              setNewPlanOpen(false);
               setEditing('new');
             }}
           >
@@ -168,6 +184,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
       )}
       {wizardOpen && <GeneratorWizard onClose={() => setWizardOpen(false)} />}
       {aiOpen && <AIImportModal onClose={() => setAiOpen(false)} />}
+      {importOpen && <ImportPlanModal onClose={() => setImportOpen(false)} />}
 
       {coverageFor && (
         <Modal

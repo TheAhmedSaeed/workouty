@@ -237,6 +237,30 @@ describe('app UI', () => {
     expect(screen.getByText(/Heaviest set per workout/)).toBeTruthy();
   });
 
+  it('imports a pasted JSON plan via the Import option', () => {
+    renderApp();
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('📥 Import / paste JSON'));
+    const json = JSON.stringify({
+      name: 'Pasted Plan',
+      days: [
+        {
+          name: 'Day 1',
+          exercises: [{ name: 'Squat (Barbell)', sets: 5, repsMin: 5, repsMax: 5 }],
+        },
+      ],
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText(/"name": "My Plan"/),
+      { target: { value: json } },
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Import plan' }));
+    expect(screen.getByText('Plan imported 🎉')).toBeTruthy();
+    fireEvent.click(screen.getByText('Done'));
+    expect(screen.getByText('Pasted Plan')).toBeTruthy();
+    expect(screen.getByText(/1 day \/ week/)).toBeTruthy();
+  });
+
   it('shows last-time hints when repeating a workout day', () => {
     renderApp();
     // build a tiny manual plan

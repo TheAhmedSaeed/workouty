@@ -30,7 +30,10 @@ locally in your browser.
   2. **Ask an AI / coach** — the app writes a prompt for you; paste it into
      Claude, ChatGPT or any assistant, paste the JSON answer back, and the
      plan is imported (unknown exercises are created automatically).
-  3. **Build manually** — full editor for days, exercises, sets and reps.
+  3. **Import / paste JSON** — copy the plan format, give it to any AI
+     ("give me the exercises in this format"), then paste the JSON back or
+     upload it as a file.
+  4. **Build manually** — full editor for days, exercises, sets and reps.
 - **Backup** — export/import all your data as a JSON file (Settings tab).
 - kg / lb unit support.
 
