@@ -1,13 +1,13 @@
 {
-  "name": "Upper-Focus PPL (3-Day)",
-  "description": "Push / Pull / Legs once a week with extra upper-body volume — built for visible upper-body results while keeping legs strong.",
+  "name": "Upper-Focus PPL (3-Day) v2",
+  "description": "Push / Pull / Legs with chest priority — chest trained twice a week, upper body roughly double the leg volume.",
   "days": [
     {
       "name": "Push",
       "exercises": [
         { "name": "Bench Press (Barbell)", "sets": 4, "repsMin": 6, "repsMax": 10 },
         { "name": "Incline Press (Dumbbell)", "sets": 3, "repsMin": 8, "repsMax": 12 },
-        { "name": "Shoulder Press (Dumbbell)", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "name": "Cable Fly (Crossover)", "sets": 3, "repsMin": 12, "repsMax": 15 },
         { "name": "Lateral Raise (Dumbbell)", "sets": 3, "repsMin": 12, "repsMax": 15 },
         { "name": "Triceps Pushdown (Cable)", "sets": 3, "repsMin": 10, "repsMax": 15 },
         { "name": "Overhead Triceps Extension (Cable/DB)", "sets": 2, "repsMin": 10, "repsMax": 15 }
@@ -25,13 +25,13 @@
       ]
     },
     {
-      "name": "Legs + Upper Pump",
+      "name": "Legs + Chest Pump",
       "exercises": [
         { "name": "Squat (Barbell)", "sets": 4, "repsMin": 6, "repsMax": 10 },
-        { "name": "Romanian Deadlift (Barbell)", "sets": 3, "repsMin": 8, "repsMax": 12 },
-        { "name": "Leg Press", "sets": 3, "repsMin": 10, "repsMax": 12 },
-        { "name": "Standing Calf Raise", "sets": 3, "repsMin": 10, "repsMax": 15 },
-        { "name": "Lateral Raise (Dumbbell)", "sets": 2, "repsMin": 12, "repsMax": 15 },
+        { "name": "Romanian Deadlift (Barbell)", "sets": 4, "repsMin": 8, "repsMax": 12 },
+        { "name": "Leg Press", "sets": 4, "repsMin": 10, "repsMax": 12 },
+        { "name": "Standing Calf Raise", "sets": 4, "repsMin": 10, "repsMax": 15 },
+        { "name": "Bench Press (Dumbbell)", "sets": 3, "repsMin": 8, "repsMax": 12 },
         { "name": "Cable Crunch", "sets": 3, "repsMin": 10, "repsMax": 15 }
       ]
     }
