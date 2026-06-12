@@ -7,6 +7,7 @@ import { StoreProvider } from '../state/store';
 import { generatePlan } from '../lib/planGenerator';
 import { buildAIPrompt, importAIPlan } from '../lib/aiPlan';
 import { EXERCISES, EXERCISE_MAP } from '../data/exercises';
+import { demoFrames, youtubeSearchUrl } from '../data/demos';
 import {
   exerciseHistory,
   lastPerformance,
@@ -153,6 +154,29 @@ describe('stats', () => {
   it('weeklySeries buckets workouts into the current week', () => {
     const series = weeklySeries([w(0, 80)]);
     expect(series[series.length - 1].workouts).toBe(1);
+  });
+});
+
+describe('exercise demos', () => {
+  it('every built-in exercise has demo frames and a YouTube link', () => {
+    for (const ex of EXERCISES) {
+      const frames = demoFrames(ex.id);
+      expect(frames, `missing demo for ${ex.id}`).not.toBeNull();
+      expect(frames![0]).toMatch(/^https:\/\/raw\.githubusercontent\.com\/.*\/0\.jpg$/);
+      expect(frames![1]).toMatch(/\/1\.jpg$/);
+      expect(youtubeSearchUrl(ex)).toContain('youtube.com/results');
+    }
+  });
+
+  it('exercise detail modal shows the animated demo and YouTube button', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('Exercises'));
+    fireEvent.click(screen.getByText('Bench Press (Barbell)'));
+    expect(screen.getByAltText('Start position')).toBeTruthy();
+    expect(screen.getByAltText('End position')).toBeTruthy();
+    const yt = screen.getByText(/Watch how-to video on YouTube/) as HTMLAnchorElement;
+    expect(yt.href).toContain('youtube.com/results');
+    expect(yt.target).toBe('_blank');
   });
 });
 

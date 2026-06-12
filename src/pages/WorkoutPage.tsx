@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../state/store';
 import { ExercisePicker } from '../components/ExercisePicker';
+import { ExerciseInfo } from '../components/ExerciseInfo';
 import { Modal } from '../components/Modal';
 import { lastPerformance, personalRecord } from '../lib/stats';
 import { formatDate } from '../lib/utils';
-import { MUSCLE_LABELS } from '../types';
 
 function useElapsed(startIso: string): string {
   const [, tick] = useState(0);
@@ -279,19 +279,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
 
       {infoExercise && (
         <Modal title={infoExercise.name} onClose={() => setInfoFor(null)}>
-          <p className="muted">{infoExercise.description}</p>
-          <div>
-            {infoExercise.primaryMuscles.map((m) => (
-              <span className="chip primary" key={m}>
-                {MUSCLE_LABELS[m]}
-              </span>
-            ))}
-            {infoExercise.secondaryMuscles.map((m) => (
-              <span className="chip" key={m}>
-                {MUSCLE_LABELS[m]}
-              </span>
-            ))}
-          </div>
+          <ExerciseInfo exercise={infoExercise} />
           {(() => {
             const pr = personalRecord(state.workouts, infoExercise.id);
             return pr ? (

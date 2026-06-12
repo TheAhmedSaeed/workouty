@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../state/store';
 import { Modal } from '../components/Modal';
+import { ExerciseInfo } from '../components/ExerciseInfo';
 import {
   Exercise,
   ExerciseCategory,
@@ -80,19 +81,7 @@ export function ExercisesPage() {
 
       {open && (
         <Modal title={open.name} onClose={() => setOpen(null)}>
-          <p className="muted">{open.description}</p>
-          <div style={{ marginBottom: 10 }}>
-            {open.primaryMuscles.map((m) => (
-              <span className="chip primary" key={m}>
-                {MUSCLE_LABELS[m]}
-              </span>
-            ))}
-            {open.secondaryMuscles.map((m) => (
-              <span className="chip" key={m}>
-                {MUSCLE_LABELS[m]}
-              </span>
-            ))}
-          </div>
+          <ExerciseInfo exercise={open} />
           {(() => {
             const pr = personalRecord(state.workouts, open.id);
             const last = lastPerformance(state.workouts, open.id);

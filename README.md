@@ -14,6 +14,11 @@ locally in your browser.
 - **Exercise database** — 50+ built-in exercises, each explaining what it does
   and which muscles it targets (primary and secondary). Add your own custom
   exercises too.
+- **How-to demos** — every built-in exercise has an animated demonstration
+  (start/end position, played like a GIF) right inside the exercise view,
+  plus a one-tap **Watch on YouTube** button for a full video. Demo images
+  come from the public-domain
+  [free-exercise-db](https://github.com/yuhonas/free-exercise-db).
 - **Muscle coverage analysis** — for any plan, see weekly sets per muscle
   group and instantly spot muscles you're under-training.
 - **Analytics** — volume / sets / workouts per week, per-exercise progress
