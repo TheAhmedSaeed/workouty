@@ -192,6 +192,8 @@ describe('app UI', () => {
     expect(screen.getByText('Bench Press (Barbell)')).toBeTruthy();
     fireEvent.click(screen.getByText('Settings'));
     expect(screen.getByText('Kilograms (kg)')).toBeTruthy();
+    // cloud sync section is offered when not configured
+    expect(screen.getByText('☁️ Set up cloud sync')).toBeTruthy();
   });
 
   it('full flow: generate plan, start day, log sets, finish, see history & analytics', () => {

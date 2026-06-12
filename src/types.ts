@@ -126,4 +126,6 @@ export interface AppState {
   templates: Template[];
   workouts: Workout[]; // finished workouts, newest last
   activeWorkout: Workout | null;
+  /** Tombstones so deletions propagate across synced devices. */
+  deleted?: { workouts: string[]; templates: string[] };
 }

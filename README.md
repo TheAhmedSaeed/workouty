@@ -35,7 +35,27 @@ locally in your browser.
      upload it as a file.
   4. **Build manually** — full editor for days, exercises, sets and reps.
 - **Backup** — export/import all your data as a JSON file (Settings tab).
+- **Cloud sync (optional)** — sync plans and workout history across devices
+  using your own free [Supabase](https://supabase.com) project. Devices merge
+  on sync (union by id with tombstoned deletions), so workouts logged on two
+  devices are never lost. The in-progress workout always stays local.
 - kg / lb unit support.
+
+## Cloud sync setup (one time, ~3 minutes)
+
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In the project, open **SQL Editor → New query**, paste the contents of
+   [`supabase/schema.sql`](supabase/schema.sql) and run it (the app also has
+   a copy-SQL button in Settings).
+3. In **Authentication → Sign In / Providers → Email**, turn **off**
+   “Confirm email”.
+4. In the app: **Settings → Set up cloud sync**, paste your Project URL and
+   anon public key (from **Project Settings → API**), then create an account
+   with any email + password.
+5. Repeat step 4 on your other devices and sign in with the same account.
+
+Changes upload automatically (debounced); the app pulls and merges on launch
+and via **Sync now**.
 
 ## Run it
 

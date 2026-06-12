@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -18,6 +19,14 @@ import {
 import { EXERCISES, EXERCISE_MAP } from '../data/exercises';
 import { lastPerformance } from '../lib/stats';
 import { uid } from '../lib/utils';
+import {
+  SyncConfig,
+  getClient,
+  getSyncConfig,
+  mergeStates,
+  setSyncConfig,
+  stripForSync,
+} from '../lib/sync';
 
 const STORAGE_KEY = 'workouty-state-v1';
 
@@ -29,6 +38,7 @@ function defaultState(): AppState {
     templates: [],
     workouts: [],
     activeWorkout: null,
+    deleted: { workouts: [], templates: [] },
   };
 }
 
@@ -64,12 +74,29 @@ interface StoreApi {
   // backup
   exportData: () => string;
   importData: (json: string) => { ok: boolean; error?: string };
+  // cloud sync
+  sync: SyncApi;
+}
+
+export interface SyncApi {
+  configured: boolean;
+  userEmail: string | null;
+  syncing: boolean;
+  lastSync: Date | null;
+  error: string | null;
+  configure: (config: SyncConfig | null) => void;
+  signUp: (email: string, password: string) => Promise<string | null>;
+  signIn: (email: string, password: string) => Promise<string | null>;
+  signOut: () => Promise<void>;
+  syncNow: () => Promise<string | null>;
 }
 
 const StoreContext = createContext<StoreApi | null>(null);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(loadState);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
     try {
@@ -78,6 +105,124 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       // storage full or unavailable — keep running in memory
     }
   }, [state]);
+
+  // ── Cloud sync (optional, user's own Supabase project) ─────────────────
+  const [syncConfigured, setSyncConfigured] = useState(() => !!getSyncConfig());
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
+  const syncNow = useCallback(async (): Promise<string | null> => {
+    const client = getClient();
+    if (!client) return 'Sync is not configured.';
+    setSyncing(true);
+    setSyncError(null);
+    try {
+      const { data: userData } = await client.auth.getUser();
+      const user = userData?.user;
+      if (!user) return 'Not signed in.';
+      const { data, error } = await client
+        .from('app_state')
+        .select('state')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      let next = stateRef.current;
+      if (data?.state) next = mergeStates(stateRef.current, data.state as AppState);
+      setState(next);
+      const { error: upError } = await client.from('app_state').upsert({
+        user_id: user.id,
+        state: stripForSync(next),
+        updated_at: new Date().toISOString(),
+      });
+      if (upError) throw new Error(upError.message);
+      setLastSync(new Date());
+      return null;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Sync failed.';
+      setSyncError(msg);
+      return msg;
+    } finally {
+      setSyncing(false);
+    }
+  }, []);
+
+  // watch auth state; pull + merge as soon as we're signed in
+  useEffect(() => {
+    if (!syncConfigured) {
+      setUserEmail(null);
+      return;
+    }
+    const client = getClient();
+    if (!client) return;
+    client.auth.getSession().then(({ data }) => {
+      const email = data.session?.user?.email ?? null;
+      setUserEmail(email);
+      if (email) syncNow();
+    });
+    const { data: sub } = client.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [syncConfigured, syncNow]);
+
+  // auto-push (debounced) whenever state changes while signed in
+  useEffect(() => {
+    if (!userEmail) return;
+    const client = getClient();
+    if (!client) return;
+    const t = setTimeout(async () => {
+      const { data } = await client.auth.getUser();
+      if (!data?.user) return;
+      const { error } = await client.from('app_state').upsert({
+        user_id: data.user.id,
+        state: stripForSync(stateRef.current),
+        updated_at: new Date().toISOString(),
+      });
+      if (error) setSyncError(error.message);
+      else {
+        setSyncError(null);
+        setLastSync(new Date());
+      }
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [state, userEmail]);
+
+  const sync: SyncApi = {
+    configured: syncConfigured,
+    userEmail,
+    syncing,
+    lastSync,
+    error: syncError,
+    configure: (config) => {
+      setSyncConfig(config);
+      setSyncConfigured(!!config);
+      setSyncError(null);
+      if (!config) setUserEmail(null);
+    },
+    signUp: async (email, password) => {
+      const client = getClient();
+      if (!client) return 'Sync is not configured.';
+      const { error } = await client.auth.signUp({ email, password });
+      if (error) return error.message;
+      await syncNow();
+      return null;
+    },
+    signIn: async (email, password) => {
+      const client = getClient();
+      if (!client) return 'Sync is not configured.';
+      const { error } = await client.auth.signInWithPassword({ email, password });
+      if (error) return error.message;
+      await syncNow();
+      return null;
+    },
+    signOut: async () => {
+      await getClient()?.auth.signOut();
+      setUserEmail(null);
+    },
+    syncNow,
+  };
 
   const getExercise = useCallback(
     (id: string) =>
@@ -123,6 +268,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setState((st) => ({
       ...st,
       templates: st.templates.filter((t) => t.id !== id),
+      deleted: {
+        workouts: st.deleted?.workouts ?? [],
+        templates: [...(st.deleted?.templates ?? []), id],
+      },
     }));
   }, []);
 
@@ -192,6 +341,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setState((st) => ({
       ...st,
       workouts: st.workouts.filter((w) => w.id !== id),
+      deleted: {
+        workouts: [...(st.deleted?.workouts ?? []), id],
+        templates: st.deleted?.templates ?? [],
+      },
     }));
   }, []);
 
@@ -226,6 +379,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     deleteWorkout,
     exportData,
     importData,
+    sync,
   };
 
   return <StoreContext.Provider value={api}>{children}</StoreContext.Provider>;
