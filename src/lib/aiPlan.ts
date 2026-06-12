@@ -107,6 +107,32 @@ function findExercise(name: string, all: Exercise[]): Exercise | undefined {
   return bestScore >= 0.6 ? best : undefined;
 }
 
+/**
+ * Similar existing exercises for duplicate detection when the user creates
+ * a custom exercise. `exact` is true when the name already exists.
+ */
+export function findSimilarExercises(
+  name: string,
+  all: Exercise[],
+): { exact: Exercise | null; similar: Exercise[] } {
+  const n = normalize(name);
+  if (!n) return { exact: null, similar: [] };
+  const exact = all.find((e) => normalize(e.name) === n) ?? null;
+  const tokens = n.split(' ');
+  const scored = all
+    .map((e) => {
+      const et = normalize(e.name).split(' ');
+      const setE = new Set(et);
+      const overlap = tokens.filter((t) => setE.has(t)).length;
+      return { e, score: overlap / Math.max(tokens.length, et.length) };
+    })
+    .filter((x) => x.score >= 0.45 && x.e !== exact)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((x) => x.e);
+  return { exact, similar: scored };
+}
+
 /** Extract the first JSON object from pasted text (handles ```json fences). */
 function extractJSON(text: string): unknown {
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);

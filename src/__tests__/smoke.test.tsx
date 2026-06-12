@@ -180,6 +180,30 @@ describe('exercise demos', () => {
   });
 });
 
+describe('custom exercise duplicate check', () => {
+  it('blocks creating an exercise that already exists', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('Exercises'));
+    fireEvent.click(screen.getByText('＋ Custom'));
+    const nameInput = screen.getAllByRole('textbox')[1]; // 0 = page search
+    fireEvent.change(nameInput, { target: { value: 'bench press barbell' } });
+    expect(screen.getByText(/already exists/)).toBeTruthy();
+    const create = screen.getByRole('button', { name: 'Create exercise' });
+    expect((create as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('suggests similar exercises without blocking', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('Exercises'));
+    fireEvent.click(screen.getByText('＋ Custom'));
+    const nameInput = screen.getAllByRole('textbox')[1];
+    fireEvent.change(nameInput, { target: { value: 'Incline Bench' } });
+    expect(screen.getByText(/Similar exercises already in the database/)).toBeTruthy();
+    const create = screen.getByRole('button', { name: 'Create exercise' });
+    expect((create as HTMLButtonElement).disabled).toBe(false);
+  });
+});
+
 describe('app UI', () => {
   it('renders home, navigates all tabs without crashing', () => {
     renderApp();

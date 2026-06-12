@@ -10,6 +10,7 @@ import {
   MuscleGroup,
 } from '../types';
 import { exerciseHistory, lastPerformance, personalRecord } from '../lib/stats';
+import { findSimilarExercises } from '../lib/aiPlan';
 import { formatDate } from '../lib/utils';
 
 export function ExercisesPage() {
@@ -129,10 +130,17 @@ function CustomExerciseModal({
   onClose: () => void;
   onCreate: (ex: Omit<Exercise, 'id' | 'isCustom'>) => void;
 }) {
+  const { allExercises } = useStore();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<ExerciseCategory>('other');
   const [primary, setPrimary] = useState<MuscleGroup[]>([]);
   const [description, setDescription] = useState('');
+
+  // live duplicate check against the built-in + custom database
+  const dup = useMemo(
+    () => findSimilarExercises(name, allExercises),
+    [name, allExercises],
+  );
 
   const toggle = (m: MuscleGroup) =>
     setPrimary((p) => (p.includes(m) ? p.filter((x) => x !== m) : [...p, m]));
@@ -142,6 +150,18 @@ function CustomExerciseModal({
       <div className="form-field">
         <label>Name</label>
         <input value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+        {dup.exact && (
+          <p style={{ color: 'var(--red)', fontSize: '0.82rem', margin: '8px 0 0' }}>
+            ⚠ “{dup.exact.name}” already exists — no need to create it again.
+          </p>
+        )}
+        {!dup.exact && dup.similar.length > 0 && (
+          <p className="faint" style={{ margin: '8px 0 0' }}>
+            Similar exercises already in the database:{' '}
+            {dup.similar.map((e) => e.name).join(' · ')}. Create yours only if
+            it's really different.
+          </p>
+        )}
       </div>
       <div className="form-field">
         <label>Equipment</label>
@@ -181,8 +201,8 @@ function CustomExerciseModal({
       </div>
       <button
         className="btn primary block"
-        disabled={!name.trim()}
-        style={{ opacity: name.trim() ? 1 : 0.5 }}
+        disabled={!name.trim() || !!dup.exact}
+        style={{ opacity: name.trim() && !dup.exact ? 1 : 0.5 }}
         onClick={() =>
           onCreate({
             name: name.trim(),

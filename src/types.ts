@@ -117,6 +117,8 @@ export type Unit = 'kg' | 'lb';
 
 export interface Settings {
   unit: Unit;
+  /** When settings last changed — newer side wins when devices sync. */
+  updatedAt?: string;
 }
 
 export interface AppState {

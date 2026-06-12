@@ -167,27 +167,44 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, [syncConfigured, syncNow]);
 
+  const pushNow = useCallback(async () => {
+    const client = getClient();
+    if (!client) return;
+    const { data } = await client.auth.getUser();
+    if (!data?.user) return;
+    const { error } = await client.from('app_state').upsert({
+      user_id: data.user.id,
+      state: stripForSync(stateRef.current),
+      updated_at: new Date().toISOString(),
+    });
+    if (error) setSyncError(error.message);
+    else {
+      setSyncError(null);
+      setLastSync(new Date());
+    }
+  }, []);
+
   // auto-push (debounced) whenever state changes while signed in
   useEffect(() => {
     if (!userEmail) return;
-    const client = getClient();
-    if (!client) return;
-    const t = setTimeout(async () => {
-      const { data } = await client.auth.getUser();
-      if (!data?.user) return;
-      const { error } = await client.from('app_state').upsert({
-        user_id: data.user.id,
-        state: stripForSync(stateRef.current),
-        updated_at: new Date().toISOString(),
-      });
-      if (error) setSyncError(error.message);
-      else {
-        setSyncError(null);
-        setLastSync(new Date());
-      }
-    }, 2500);
+    const t = setTimeout(pushNow, 2500);
     return () => clearTimeout(t);
-  }, [state, userEmail]);
+  }, [state, userEmail, pushNow]);
+
+  // flush immediately when the app is backgrounded or closed, so the
+  // debounce window can't swallow the last change
+  useEffect(() => {
+    if (!userEmail) return;
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') pushNow();
+    };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onHide);
+    };
+  }, [userEmail, pushNow]);
 
   const sync: SyncApi = {
     configured: syncConfigured,
@@ -239,7 +256,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   const setSettings = useCallback((s: Partial<Settings>) => {
-    setState((st) => ({ ...st, settings: { ...st.settings, ...s } }));
+    setState((st) => ({
+      ...st,
+      settings: { ...st.settings, ...s, updatedAt: new Date().toISOString() },
+    }));
   }, []);
 
   const addCustomExercise = useCallback(

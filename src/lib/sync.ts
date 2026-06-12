@@ -68,8 +68,15 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     return [...map.values()].filter((x) => !deleted.has(x.id));
   };
 
+  // settings follow whichever device changed them most recently
+  const settings =
+    (remote.settings?.updatedAt ?? '') > (local.settings?.updatedAt ?? '')
+      ? remote.settings
+      : local.settings;
+
   return {
     ...local,
+    settings,
     workouts: unionById(local.workouts, remote.workouts ?? [], delWorkouts).sort(
       (a, b) => a.startedAt.localeCompare(b.startedAt),
     ),

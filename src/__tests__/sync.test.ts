@@ -57,14 +57,23 @@ describe('sync merge', () => {
     expect(merged.deleted!.workouts).toContain('a');
   });
 
-  it('keeps local settings and active workout', () => {
+  it('settings follow the most recently changed device', () => {
     const local = base({
-      settings: { unit: 'lb' },
-      activeWorkout: workout('live', 0),
+      settings: { unit: 'lb', updatedAt: '2026-06-01T00:00:00Z' },
     });
-    const remote = base({ settings: { unit: 'kg' } });
-    const merged = mergeStates(local, remote);
-    expect(merged.settings.unit).toBe('lb');
+    const remote = base({
+      settings: { unit: 'kg', updatedAt: '2026-06-10T00:00:00Z' },
+    });
+    expect(mergeStates(local, remote).settings.unit).toBe('kg');
+    expect(mergeStates(remote, local).settings.unit).toBe('kg');
+    // never-changed settings lose to changed ones
+    const fresh = base({ settings: { unit: 'kg' } });
+    expect(mergeStates(fresh, local).settings.unit).toBe('lb');
+  });
+
+  it('keeps the local active workout', () => {
+    const local = base({ activeWorkout: workout('live', 0) });
+    const merged = mergeStates(local, base({}));
     expect(merged.activeWorkout?.id).toBe('live');
   });
 
