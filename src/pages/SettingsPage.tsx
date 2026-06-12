@@ -254,8 +254,10 @@ function CloudSyncSection() {
               <b>off</b> “Confirm email” (so sign-up works instantly).
             </li>
             <li>
-              From <b>Project Settings → API</b>, copy the Project URL and the{' '}
-              <b>anon public</b> key into the fields below.
+              From <b>Project Settings → API Keys</b>, copy the{' '}
+              <b>Publishable key</b> (on older projects it's called the{' '}
+              <b>anon public</b> key). Your Project URL is under{' '}
+              <b>Project Settings → Data API</b>.
             </li>
           </ol>
           <div className="form-field">
@@ -267,9 +269,9 @@ function CloudSyncSection() {
             />
           </div>
           <div className="form-field">
-            <label>Anon public key</label>
+            <label>Publishable / anon key</label>
             <input
-              placeholder="eyJhbGciOi…"
+              placeholder="sb_publishable_… or eyJhbGciOi…"
               value={anonKey}
               onChange={(e) => setAnonKey(e.target.value)}
             />

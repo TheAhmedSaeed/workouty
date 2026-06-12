@@ -69,6 +69,12 @@ npm test         # unit + UI smoke tests
 Open the printed URL on your phone or computer. The app is mobile-first —
 add it to your home screen for a native-like experience.
 
+## Deploy (Railway or any Node host)
+
+The repo is deploy-ready: the host just needs to run `npm install`,
+`npm run build`, then `npm start` (Railway's Nixpacks does this
+automatically). `npm start` serves the built `dist/` folder on `$PORT`.
+
 > **Note:** data lives in the browser's localStorage on the device you use.
 > Use *Settings → Export backup* to move data between devices.
 
