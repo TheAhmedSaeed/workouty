@@ -1,6 +1,6 @@
 {
-  "name": "Upper-Focus PPL (3-Day) v2",
-  "description": "Push / Pull / Legs with chest priority — chest trained twice a week, upper body roughly double the leg volume.",
+  "name": "Upper-Focus PPL (3-Day) v3",
+  "description": "Push / Pull / Legs with chest priority — every muscle at 8+ weekly sets, chest trained twice a week.",
   "days": [
     {
       "name": "Push",
@@ -10,7 +10,8 @@
         { "name": "Cable Fly (Crossover)", "sets": 3, "repsMin": 12, "repsMax": 15 },
         { "name": "Lateral Raise (Dumbbell)", "sets": 3, "repsMin": 12, "repsMax": 15 },
         { "name": "Triceps Pushdown (Cable)", "sets": 3, "repsMin": 10, "repsMax": 15 },
-        { "name": "Overhead Triceps Extension (Cable/DB)", "sets": 2, "repsMin": 10, "repsMax": 15 }
+        { "name": "Overhead Triceps Extension (Cable/DB)", "sets": 2, "repsMin": 10, "repsMax": 15 },
+        { "name": "Seated Calf Raise", "sets": 4, "repsMin": 12, "repsMax": 15 }
       ]
     },
     {
@@ -21,7 +22,9 @@
         { "name": "Seated Cable Row", "sets": 3, "repsMin": 8, "repsMax": 12 },
         { "name": "Face Pull", "sets": 3, "repsMin": 12, "repsMax": 15 },
         { "name": "Bicep Curl (Barbell)", "sets": 3, "repsMin": 8, "repsMax": 12 },
-        { "name": "Hammer Curl (Dumbbell)", "sets": 2, "repsMin": 10, "repsMax": 15 }
+        { "name": "Hammer Curl (Dumbbell)", "sets": 2, "repsMin": 10, "repsMax": 15 },
+        { "name": "Shrug (Dumbbell)", "sets": 3, "repsMin": 10, "repsMax": 15 },
+        { "name": "Hanging Leg Raise", "sets": 3, "repsMin": 10, "repsMax": 15 }
       ]
     },
     {
@@ -32,6 +35,7 @@
         { "name": "Leg Press", "sets": 4, "repsMin": 10, "repsMax": 12 },
         { "name": "Standing Calf Raise", "sets": 4, "repsMin": 10, "repsMax": 15 },
         { "name": "Bench Press (Dumbbell)", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "name": "Back Extension (Hyperextension)", "sets": 3, "repsMin": 12, "repsMax": 15 },
         { "name": "Cable Crunch", "sets": 3, "repsMin": 10, "repsMax": 15 }
       ]
     }

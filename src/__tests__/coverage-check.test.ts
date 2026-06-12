@@ -30,7 +30,7 @@ it('shipped 3-day plan has good coverage on priority muscles', () => {
       coverageVerdict(sets[m]).level,
       `${m} should be Good, got ${sets[m]} sets`,
     ).toBe('good');
-  // legs are deliberately lower on this plan, but must still be trained
-  for (const m of ['quads', 'hamstrings', 'glutes', 'calves'] as const)
-    expect(sets[m], `${m} must not be zero`).toBeGreaterThan(2);
+  // user requirement: every muscle group gets at least 8 weekly sets
+  for (const m of MUSCLE_GROUPS)
+    expect(sets[m], `${m} must be >= 8 weekly sets`).toBeGreaterThanOrEqual(8);
 });
