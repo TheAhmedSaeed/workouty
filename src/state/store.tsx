@@ -38,6 +38,7 @@ function defaultState(): AppState {
     templates: [],
     workouts: [],
     activeWorkout: null,
+    exerciseNotes: {},
     deleted: { workouts: [], templates: [] },
   };
 }
@@ -61,6 +62,9 @@ interface StoreApi {
   setSettings: (s: Partial<Settings>) => void;
   // exercises
   addCustomExercise: (ex: Omit<Exercise, 'id' | 'isCustom'>) => Exercise;
+  /** Persistent note shown every time this exercise is trained. */
+  exerciseNote: (exerciseId: string) => string;
+  setExerciseNote: (exerciseId: string, note: string) => void;
   // templates
   saveTemplate: (t: Template) => void;
   deleteTemplate: (id: string) => void;
@@ -274,6 +278,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const exerciseNote = useCallback(
+    (exerciseId: string) => state.exerciseNotes?.[exerciseId] ?? '',
+    [state.exerciseNotes],
+  );
+
+  const setExerciseNote = useCallback((exerciseId: string, note: string) => {
+    setState((st) => {
+      const next = { ...(st.exerciseNotes ?? {}) };
+      const trimmed = note.trim();
+      if (trimmed) next[exerciseId] = trimmed;
+      else delete next[exerciseId];
+      return { ...st, exerciseNotes: next };
+    });
+  }, []);
+
   const saveTemplate = useCallback((t: Template) => {
     setState((st) => {
       const i = st.templates.findIndex((x) => x.id === t.id);
@@ -389,6 +408,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     allExercises,
     setSettings,
     addCustomExercise,
+    exerciseNote,
+    setExerciseNote,
     saveTemplate,
     deleteTemplate,
     startWorkout,

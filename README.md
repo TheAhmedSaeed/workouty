@@ -14,6 +14,10 @@ locally in your browser.
 - **Exercise database** — 50+ built-in exercises, each explaining what it does
   and which muscles it targets (primary and secondary). Add your own custom
   exercises too.
+- **Per-exercise notes** — pin a personal reminder to any exercise (e.g.
+  *“machine weight excludes the bar”* or *“use the close grip”*). The note
+  shows up right on the logging screen every time you train that exercise, and
+  syncs across your devices.
 - **How-to demos** — every built-in exercise has an animated demonstration
   (start/end position, played like a GIF) right inside the exercise view,
   plus a one-tap **Watch on YouTube** button for a full video. Demo images

@@ -25,6 +25,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const {
     state,
     getExercise,
+    exerciseNote,
     updateActiveWorkout,
     finishWorkout,
     discardWorkout,
@@ -111,6 +112,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         const ex = getExercise(we.exerciseId);
         const prev = lastPerformance(state.workouts, we.exerciseId);
         const target = targets.get(we.exerciseId);
+        const note = exerciseNote(we.exerciseId);
         return (
           <div className="exercise-block" key={ei}>
             <div className="row between" style={{ marginBottom: 4 }}>
@@ -140,6 +142,23 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                   ? 'First time doing this exercise'
                   : ''}
             </div>
+
+            {note ? (
+              <div
+                className="ex-note inline"
+                onClick={() => setInfoFor(we.exerciseId)}
+                title="Tap to edit note"
+              >
+                <span className="ex-note-label">📝</span> {note}
+              </div>
+            ) : (
+              <button
+                className="btn small ghost ex-note-add"
+                onClick={() => setInfoFor(we.exerciseId)}
+              >
+                📝 Add note
+              </button>
+            )}
 
             <div className="set-grid header">
               <span>Set</span>

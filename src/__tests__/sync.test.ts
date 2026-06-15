@@ -88,4 +88,18 @@ describe('sync merge', () => {
     const merged = mergeStates(local, remote);
     expect(merged.workouts.map((w) => w.id)).toEqual(['a']);
   });
+
+  it('unions per-exercise notes, local winning on the same exercise', () => {
+    const local = base({
+      exerciseNotes: { 'bench-press': 'local note', squat: 'only local' },
+    });
+    const remote = base({
+      exerciseNotes: { 'bench-press': 'remote note', deadlift: 'only remote' },
+    });
+    expect(mergeStates(local, remote).exerciseNotes).toEqual({
+      'bench-press': 'local note',
+      squat: 'only local',
+      deadlift: 'only remote',
+    });
+  });
 });

@@ -128,6 +128,12 @@ export interface AppState {
   templates: Template[];
   workouts: Workout[]; // finished workouts, newest last
   activeWorkout: Workout | null;
+  /**
+   * Persistent per-exercise notes, keyed by exercise id. Unlike a workout's
+   * per-set notes these stick to the exercise, so a reminder like "weight
+   * excludes the bar" shows up every time you train that exercise.
+   */
+  exerciseNotes?: Record<string, string>;
   /** Tombstones so deletions propagate across synced devices. */
   deleted?: { workouts: string[]; templates: string[] };
 }
