@@ -71,6 +71,7 @@ export function SettingsPage() {
           );
         })}
       </div>
+      <RestNotifyToggle />
 
       <div className="section-title">Cloud sync</div>
       <CloudSyncSection />
@@ -108,6 +109,59 @@ export function SettingsPage() {
       <div className="section-title">About</div>
       <AboutCounts />
     </div>
+  );
+}
+
+/**
+ * Opt-in to a browser notification when the rest timer ends. Toggling it on
+ * asks for notification permission; we surface the browser's verdict so the
+ * user knows if alerts are blocked at the OS/browser level.
+ */
+function RestNotifyToggle() {
+  const { state, setSettings } = useStore();
+  const supported = typeof Notification !== 'undefined';
+  const [perm, setPerm] = useState<NotificationPermission | null>(
+    supported ? Notification.permission : null,
+  );
+  const on = !!state.settings.restNotify;
+
+  if (!supported) {
+    return (
+      <p className="faint">
+        This browser doesn't support notifications — you'll still get the chime
+        and vibration when rest ends.
+      </p>
+    );
+  }
+
+  const toggle = async () => {
+    const next = !on;
+    if (next && Notification.permission === 'default') {
+      const result = await Notification.requestPermission();
+      setPerm(result);
+    }
+    setSettings({ restNotify: next });
+  };
+
+  return (
+    <>
+      <label className="toggle-row">
+        <span>🔔 Notify me when rest is over</span>
+        <input type="checkbox" checked={on} onChange={toggle} />
+      </label>
+      {on && perm === 'denied' && (
+        <p className="faint">
+          Notifications are blocked for this site. Enable them in your browser's
+          site settings to get rest alerts (the chime still plays meanwhile).
+        </p>
+      )}
+      {on && perm === 'granted' && (
+        <p className="faint">
+          You'll get a notification when the rest countdown ends. On phones this
+          works best while the app is open.
+        </p>
+      )}
+    </>
   );
 }
 

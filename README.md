@@ -13,8 +13,9 @@ locally in your browser.
   set and the weight/reps flow down to the remaining sets automatically. Tick
   sets off as you go, add/remove sets and exercises freely.
 - **Rest timer** — ticking a set off starts a rest countdown; the app chimes
-  and vibrates when it's time for your next set. Add/subtract 15s or skip on
-  the fly, and set your default rest length (or turn it off) in Settings.
+  and vibrates when it's time for your next set, and can pop a browser
+  notification too (opt-in in Settings). Add/subtract 15s or skip on the fly,
+  and set your default rest length (or turn it off) in Settings.
 - **Progressive overload** — the app helps you add weight over time. Hit all
   your reps at the top of the range and it pre-fills a heavier weight next
   session (a per-exercise step you can tune), and you can set an explicit

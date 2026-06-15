@@ -38,6 +38,31 @@ function playRestDoneChime(): void {
   });
 }
 
+/** Whether browser notifications are usable (API present + permission granted). */
+function canNotify(): boolean {
+  return typeof Notification !== 'undefined' && Notification.permission === 'granted';
+}
+
+/** Fire a "rest's up" browser notification (best-effort; the chime still plays). */
+function showRestDoneNotification(): void {
+  if (!canNotify()) return;
+  try {
+    const n = new Notification("Rest's up! 💪", {
+      body: 'Time for your next set.',
+      tag: 'workouty-rest',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+    });
+    n.onclick = () => {
+      window.focus();
+      n.close();
+    };
+  } catch {
+    // mobile browsers without an active service worker can't use the
+    // Notification constructor — the in-app chime + vibration still cover it
+  }
+}
+
 function mmss(total: number): string {
   const s = Math.max(0, total);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -54,10 +79,12 @@ interface Rest {
  */
 function RestTimer({
   rest,
+  notify,
   onChange,
   onSkip,
 }: {
   rest: Rest;
+  notify: boolean;
   onChange: (r: Rest) => void;
   onSkip: () => void;
 }) {
@@ -81,8 +108,9 @@ function RestTimer({
       alerted.current = true;
       playRestDoneChime();
       if ('vibrate' in navigator) navigator.vibrate?.([300, 120, 300]);
+      if (notify) showRestDoneNotification();
     }
-  }, [remaining]);
+  }, [remaining, notify]);
 
   const done = remaining <= 0;
   const pct = done ? 100 : Math.min(100, (1 - remaining / rest.total) * 100);
@@ -149,6 +177,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [infoFor, setInfoFor] = useState<string | null>(null);
   const [rest, setRest] = useState<Rest | null>(null);
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
+  const restNotify = !!state.settings.restNotify;
 
   // template day targets, to show "3 × 8–12" and drive progression hints
   const { targets, repsMax } = useMemo(() => {
@@ -201,6 +230,13 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     // Ticking a set off starts the rest countdown; un-ticking does nothing.
     if (willComplete && restSeconds > 0) {
       ensureAudio(); // unlock audio within this tap so the chime can play later
+      // ask for notification permission inside the gesture, if opted in
+      if (
+        restNotify &&
+        typeof Notification !== 'undefined' &&
+        Notification.permission === 'default'
+      )
+        void Notification.requestPermission();
       setRest({ endsAt: Date.now() + restSeconds * 1000, total: restSeconds });
     }
     updateActiveWorkout((wk) => ({
@@ -466,6 +502,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
       {rest && (
         <RestTimer
           rest={rest}
+          notify={restNotify}
           onChange={setRest}
           onSkip={() => setRest(null)}
         />

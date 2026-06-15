@@ -134,6 +134,8 @@ export interface Settings {
    * countdown each time you tick a set off. 0 disables the rest timer.
    */
   restTimerSeconds?: number;
+  /** Show a browser notification when the rest countdown reaches zero. */
+  restNotify?: boolean;
   /** When settings last changed — newer side wins when devices sync. */
   updatedAt?: string;
 }
