@@ -365,6 +365,47 @@ input::-webkit-inner-spin-button {
   color: var(--text-faint);
 }
 
+/* progression controls inside the exercise info modal */
+.prog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+.prog-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.prog-step input {
+  width: 72px;
+  text-align: right;
+}
+.prog-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+/* progression hint on the live workout screen */
+.prog-hint {
+  background: rgba(63, 185, 80, 0.14);
+  color: var(--green);
+  border-radius: 8px;
+  padding: 7px 10px;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.prog-hint.target {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .workout-timer {
   font-variant-numeric: tabular-nums;
   color: var(--text-dim);

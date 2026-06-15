@@ -102,4 +102,15 @@ describe('sync merge', () => {
       deadlift: 'only remote',
     });
   });
+
+  it('unions per-exercise progression settings, local winning', () => {
+    const local = base({ progressions: { squat: { increment: 5, target: 120 } } });
+    const remote = base({
+      progressions: { squat: { increment: 2.5 }, bench: { target: 80 } },
+    });
+    expect(mergeStates(local, remote).progressions).toEqual({
+      squat: { increment: 5, target: 120 },
+      bench: { target: 80 },
+    });
+  });
 });

@@ -103,6 +103,18 @@ export interface WorkoutExercise {
   notes?: string;
 }
 
+/**
+ * Progression settings for an exercise, keyed by exercise id in app state.
+ * Lets the app help you add weight over time: it can auto-suggest a bump when
+ * you've hit all your reps, and you can also set an explicit target to chase.
+ */
+export interface ExerciseProgression {
+  /** Weight step used when auto-suggesting a heavier next session. */
+  increment?: number;
+  /** Manual weight to aim for next time; cleared once you hit it. */
+  target?: number;
+}
+
 export interface Workout {
   id: string;
   templateId?: string;
@@ -142,6 +154,8 @@ export interface AppState {
    * excludes the bar" shows up every time you train that exercise.
    */
   exerciseNotes?: Record<string, string>;
+  /** Per-exercise progression settings (increment + next-time target). */
+  progressions?: Record<string, ExerciseProgression>;
   /** Tombstones so deletions propagate across synced devices. */
   deleted?: { workouts: string[]; templates: string[] };
 }

@@ -88,6 +88,8 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     ),
     // per-exercise notes: union the maps, local wins on a per-exercise conflict
     exerciseNotes: { ...(remote.exerciseNotes ?? {}), ...(local.exerciseNotes ?? {}) },
+    // per-exercise progression settings merge the same way
+    progressions: { ...(remote.progressions ?? {}), ...(local.progressions ?? {}) },
     deleted: {
       workouts: [...delWorkouts].slice(-TOMBSTONE_CAP),
       templates: [...delTemplates].slice(-TOMBSTONE_CAP),

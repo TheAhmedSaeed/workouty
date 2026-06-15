@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Exercise, MUSCLE_LABELS } from '../types';
 import { demoFrames, youtubeSearchUrl } from '../data/demos';
 import { useStore } from '../state/store';
+import { defaultIncrement } from '../lib/progression';
 
 /**
  * Animated how-to demonstration: alternates the start/end position photos
@@ -114,9 +115,85 @@ function ExerciseNote({ exerciseId }: { exerciseId: string }) {
 }
 
 /**
+ * Progressive-overload controls for an exercise: the weight step used when the
+ * app auto-suggests a heavier session, plus an optional explicit target weight
+ * to chase. Both are stored per exercise and reused every time you train it.
+ */
+function ProgressionEditor({ exerciseId }: { exerciseId: string }) {
+  const { state, getExercise, getProgression, setProgression } = useStore();
+  const unit = state.settings.unit;
+  const ex = getExercise(exerciseId);
+  const prog = getProgression(exerciseId);
+  const step = prog.increment || defaultIncrement(ex, unit);
+  const [target, setTarget] = useState('');
+
+  useEffect(() => setTarget(''), [exerciseId]);
+
+  return (
+    <div className="ex-note">
+      <div className="ex-note-label">📈 Progression</div>
+      <div className="prog-row">
+        <span>Weight step</span>
+        <span className="prog-step">
+          <input
+            type="number"
+            inputMode="decimal"
+            value={prog.increment ?? ''}
+            placeholder={String(defaultIncrement(ex, unit))}
+            onChange={(e) =>
+              setProgression(exerciseId, {
+                increment: Number(e.target.value) || undefined,
+              })
+            }
+          />
+          <span className="faint">{unit}</span>
+        </span>
+      </div>
+      <p className="faint" style={{ margin: '4px 0 10px' }}>
+        Hit all your reps and the app pre-fills +{step} {unit} next time.
+      </p>
+
+      {prog.target ? (
+        <div className="prog-target">
+          <span>
+            🎯 Next-time target: <b>{prog.target} {unit}</b>
+          </span>
+          <button
+            className="btn small ghost"
+            onClick={() => setProgression(exerciseId, { target: undefined })}
+          >
+            Clear
+          </button>
+        </div>
+      ) : (
+        <div className="row">
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder={`Set a target to chase (${unit})`}
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+          />
+          <button
+            className="btn small primary"
+            disabled={!(Number(target) > 0)}
+            onClick={() => {
+              setProgression(exerciseId, { target: Number(target) });
+              setTarget('');
+            }}
+          >
+            Set
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * Shared exercise detail block: animated demo, what it does, muscles
- * targeted, your own persistent note, and a one-tap link to watch a proper
- * video on YouTube.
+ * targeted, your own persistent note, progression settings, and a one-tap
+ * link to watch a proper video on YouTube.
  */
 export function ExerciseInfo({ exercise }: { exercise: Exercise }) {
   return (
@@ -124,6 +201,7 @@ export function ExerciseInfo({ exercise }: { exercise: Exercise }) {
       <ExerciseDemo exerciseId={exercise.id} />
       <p className="muted">{exercise.description}</p>
       <ExerciseNote exerciseId={exercise.id} />
+      <ProgressionEditor exerciseId={exercise.id} />
       <div style={{ marginBottom: 10 }}>
         {exercise.primaryMuscles.map((m) => (
           <span className="chip primary" key={m}>

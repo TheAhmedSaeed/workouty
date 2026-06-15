@@ -10,6 +10,7 @@ import React, {
 import {
   AppState,
   Exercise,
+  ExerciseProgression,
   LoggedSet,
   Settings,
   Template,
@@ -18,6 +19,7 @@ import {
 } from '../types';
 import { EXERCISES, EXERCISE_MAP } from '../data/exercises';
 import { lastPerformance } from '../lib/stats';
+import { incrementFor, nextWeight, readyToProgress } from '../lib/progression';
 import { uid } from '../lib/utils';
 import {
   SyncConfig,
@@ -39,6 +41,7 @@ function defaultState(): AppState {
     workouts: [],
     activeWorkout: null,
     exerciseNotes: {},
+    progressions: {},
     deleted: { workouts: [], templates: [] },
   };
 }
@@ -65,6 +68,12 @@ interface StoreApi {
   /** Persistent note shown every time this exercise is trained. */
   exerciseNote: (exerciseId: string) => string;
   setExerciseNote: (exerciseId: string, note: string) => void;
+  /** Per-exercise progression (increment + next-time target). */
+  getProgression: (exerciseId: string) => ExerciseProgression;
+  setProgression: (
+    exerciseId: string,
+    patch: Partial<ExerciseProgression>,
+  ) => void;
   // templates
   saveTemplate: (t: Template) => void;
   deleteTemplate: (id: string) => void;
@@ -293,6 +302,29 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const getProgression = useCallback(
+    (exerciseId: string): ExerciseProgression =>
+      state.progressions?.[exerciseId] ?? {},
+    [state.progressions],
+  );
+
+  const setProgression = useCallback(
+    (exerciseId: string, patch: Partial<ExerciseProgression>) => {
+      setState((st) => {
+        const next = { ...(st.progressions ?? {}) };
+        const merged: ExerciseProgression = { ...next[exerciseId], ...patch };
+        // drop empty / non-positive fields so the entry can be cleaned up
+        if (!merged.increment || merged.increment <= 0) delete merged.increment;
+        if (!merged.target || merged.target <= 0) delete merged.target;
+        if (merged.increment == null && merged.target == null)
+          delete next[exerciseId];
+        else next[exerciseId] = merged;
+        return { ...st, progressions: next };
+      });
+    },
+    [],
+  );
+
   const saveTemplate = useCallback((t: Template) => {
     setState((st) => {
       const i = st.templates.findIndex((x) => x.id === t.id);
@@ -326,13 +358,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         startedAt: new Date().toISOString(),
         exercises: (day?.exercises ?? []).map((te) => {
           const prev = lastPerformance(st.workouts, te.exerciseId);
+          const ex =
+            EXERCISE_MAP.get(te.exerciseId) ??
+            st.customExercises.find((e) => e.id === te.exerciseId);
+          const prog = st.progressions?.[te.exerciseId];
+          const inc = incrementFor(ex, prog, st.settings.unit);
+          // bump the load when we hit all our reps at the top of the range
+          const progress =
+            !prog?.target && !!prev && readyToProgress(prev.sets, te.targetRepsMax);
           const nSets = Math.max(te.targetSets, 1);
-          const sets: LoggedSet[] = Array.from({ length: nSets }, (_, i) => ({
-            weight: prev?.sets[Math.min(i, prev.sets.length - 1)]?.weight ?? 0,
-            reps: prev?.sets[Math.min(i, prev.sets.length - 1)]?.reps ?? 0,
-            completed: false,
-            type: 'normal',
-          }));
+          const sets: LoggedSet[] = Array.from({ length: nSets }, (_, i) => {
+            const pw = prev?.sets[Math.min(i, prev.sets.length - 1)]?.weight ?? 0;
+            return {
+              weight: nextWeight(pw, {
+                target: prog?.target,
+                progress,
+                increment: inc,
+              }),
+              reps: prev?.sets[Math.min(i, prev.sets.length - 1)]?.reps ?? 0,
+              completed: false,
+              type: 'normal',
+            };
+          });
           return { exerciseId: te.exerciseId, sets };
         }),
       };
@@ -368,7 +415,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         finished.exercises.length > 0
           ? [...st.workouts, finished]
           : st.workouts;
-      return { ...st, workouts, activeWorkout: null };
+      // clear any next-time target you reached this session
+      let progressions = st.progressions;
+      if (progressions) {
+        let changed = false;
+        const next = { ...progressions };
+        for (const e of finished.exercises) {
+          const t = next[e.exerciseId]?.target;
+          if (t != null && e.sets.some((s) => s.weight >= t)) {
+            const { increment } = next[e.exerciseId];
+            if (increment) next[e.exerciseId] = { increment };
+            else delete next[e.exerciseId];
+            changed = true;
+          }
+        }
+        if (changed) progressions = next;
+      }
+      return { ...st, workouts, activeWorkout: null, progressions };
     });
   }, []);
 
@@ -410,6 +473,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addCustomExercise,
     exerciseNote,
     setExerciseNote,
+    getProgression,
+    setProgression,
     saveTemplate,
     deleteTemplate,
     startWorkout,

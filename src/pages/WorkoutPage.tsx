@@ -4,6 +4,7 @@ import { ExercisePicker } from '../components/ExercisePicker';
 import { ExerciseInfo } from '../components/ExerciseInfo';
 import { Modal } from '../components/Modal';
 import { lastPerformance, personalRecord } from '../lib/stats';
+import { incrementFor, nextWeight, readyToProgress } from '../lib/progression';
 import { formatDate } from '../lib/utils';
 import { DEFAULT_REST_SECONDS } from '../types';
 
@@ -135,6 +136,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     state,
     getExercise,
     exerciseNote,
+    getProgression,
     updateActiveWorkout,
     finishWorkout,
     discardWorkout,
@@ -148,17 +150,20 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [rest, setRest] = useState<Rest | null>(null);
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
 
-  // template day targets, to show "3 × 8–12" next to each exercise
-  const targets = useMemo(() => {
+  // template day targets, to show "3 × 8–12" and drive progression hints
+  const { targets, repsMax } = useMemo(() => {
     const t = state.templates.find((x) => x.id === w.templateId);
     const d = t?.days.find((x) => x.id === w.dayId);
-    const map = new Map<string, string>();
-    for (const te of d?.exercises ?? [])
-      map.set(
+    const targets = new Map<string, string>();
+    const repsMax = new Map<string, number>();
+    for (const te of d?.exercises ?? []) {
+      targets.set(
         te.exerciseId,
         `${te.targetSets} × ${te.targetRepsMin}–${te.targetRepsMax}`,
       );
-    return map;
+      repsMax.set(te.exerciseId, te.targetRepsMax);
+    }
+    return { targets, repsMax };
   }, [state.templates, w.templateId, w.dayId]);
 
   const doneSets = w.exercises.reduce(
@@ -236,6 +241,15 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         const prev = lastPerformance(state.workouts, we.exerciseId);
         const target = targets.get(we.exerciseId);
         const note = exerciseNote(we.exerciseId);
+        const prog = getProgression(we.exerciseId);
+        const rmax = repsMax.get(we.exerciseId);
+        const progressed =
+          !prog.target && !!prev && rmax != null && readyToProgress(prev.sets, rmax);
+        const progHint = prog.target
+          ? `🎯 Aim for ${prog.target} ${unit} — hit it to clear this target`
+          : progressed
+            ? `💪 +${incrementFor(ex, prog, unit)} ${unit} vs last time — you hit all your reps`
+            : null;
         return (
           <div className="exercise-block" key={ei}>
             <div className="row between" style={{ marginBottom: 4 }}>
@@ -281,6 +295,16 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               >
                 📝 Add note
               </button>
+            )}
+
+            {progHint && (
+              <div
+                className={`prog-hint${prog.target ? ' target' : ''}`}
+                onClick={() => setInfoFor(we.exerciseId)}
+                title="Tap to adjust progression"
+              >
+                {progHint}
+              </div>
             )}
 
             <div className="set-grid header">
@@ -396,6 +420,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           onClose={() => setPicking(false)}
           onPick={(ex) => {
             const prev = lastPerformance(state.workouts, ex.id);
+            const target = getProgression(ex.id).target;
             updateActiveWorkout((wk) => ({
               ...wk,
               exercises: [
@@ -405,7 +430,11 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                   sets: Array.from(
                     { length: Math.max(prev?.sets.length ?? 3, 1) },
                     (_, i) => ({
-                      weight: prev?.sets[i]?.weight ?? 0,
+                      weight: nextWeight(prev?.sets[i]?.weight ?? 0, {
+                        target,
+                        progress: false,
+                        increment: 0,
+                      }),
                       reps: prev?.sets[i]?.reps ?? 0,
                       completed: false,
                       type: 'normal' as const,
