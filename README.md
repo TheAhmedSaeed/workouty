@@ -9,8 +9,9 @@ locally in your browser.
 - **Plans (templates)** — create programs like *Push Pull Legs* or
   *Upper/Lower*, each with its days and exercises (target sets × rep ranges).
 - **Workout logging** — start a day from a plan and the app shows what you did
-  **last time** (weights, reps, sets) and pre-fills your sets. Tick sets off
-  as you go, add/remove sets and exercises freely.
+  **last time** (weights, reps, sets) and pre-fills your sets. Enter your first
+  set and the weight/reps flow down to the remaining sets automatically. Tick
+  sets off as you go, add/remove sets and exercises freely.
 - **Rest timer** — ticking a set off starts a rest countdown; the app chimes
   and vibrates when it's time for your next set. Add/subtract 15s or skip on
   the fly, and set your default rest length (or turn it off) in Settings.

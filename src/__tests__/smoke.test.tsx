@@ -263,6 +263,23 @@ describe('app UI', () => {
     expect(screen.getByText(/Heaviest set per workout/)).toBeTruthy();
   });
 
+  it('entering the first set auto-fills the remaining sets', () => {
+    renderApp();
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('✨ Generate for me'));
+    fireEvent.click(screen.getByText('3 days'));
+    fireEvent.click(screen.getByText('Build muscle'));
+    fireEvent.click(screen.getByText('✨ Generate plan'));
+    fireEvent.click(screen.getByText('✓ Save this plan'));
+    fireEvent.click(screen.getAllByText('Start')[0]);
+
+    const nums = () => screen.getAllByRole('spinbutton') as HTMLInputElement[];
+    // first exercise's first-set weight is the very first number input
+    fireEvent.change(nums()[0], { target: { value: '60' } });
+    // the same weight should now appear in at least one later set
+    expect(nums().filter((i) => i.value === '60').length).toBeGreaterThan(1);
+  });
+
   it('imports a pasted JSON plan via the Import option', () => {
     renderApp();
     fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));

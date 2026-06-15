@@ -178,9 +178,14 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         i === ei
           ? {
               ...e,
-              sets: e.sets.map((s, j) =>
-                j === si ? { ...s, [field]: value } : s,
-              ),
+              sets: e.sets.map((s, j) => {
+                if (j === si) return { ...s, [field]: value };
+                // Typing the first set cascades into the later sets you
+                // haven't ticked off yet, so you only enter it once.
+                if (si === 0 && j > si && !s.completed)
+                  return { ...s, [field]: value };
+                return s;
+              }),
             }
           : e,
       ),
