@@ -1,10 +1,119 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { ExerciseInfo } from '../components/ExerciseInfo';
 import { Modal } from '../components/Modal';
 import { lastPerformance, personalRecord } from '../lib/stats';
 import { formatDate } from '../lib/utils';
+import { DEFAULT_REST_SECONDS } from '../types';
+
+// One shared AudioContext, unlocked on a user gesture (ticking a set), so the
+// rest-over chime can still play later when the countdown reaches zero.
+let audioCtx: AudioContext | null = null;
+function ensureAudio(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AC) return null;
+  if (!audioCtx) audioCtx = new AC();
+  if (audioCtx.state === 'suspended') void audioCtx.resume();
+  return audioCtx;
+}
+function playRestDoneChime(): void {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const start = ctx.currentTime;
+  [0, 0.2, 0.4].forEach((t) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.0001, start + t);
+    gain.gain.exponentialRampToValueAtTime(0.3, start + t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + t + 0.18);
+    osc.start(start + t);
+    osc.stop(start + t + 0.2);
+  });
+}
+
+function mmss(total: number): string {
+  const s = Math.max(0, total);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+interface Rest {
+  endsAt: number; // epoch ms
+  total: number; // seconds, for the progress bar
+}
+
+/**
+ * Sticky rest countdown. Appears when a set is ticked off, beeps + vibrates
+ * when time's up, and lets you add/subtract 15s or skip ahead.
+ */
+function RestTimer({
+  rest,
+  onChange,
+  onSkip,
+}: {
+  rest: Rest;
+  onChange: (r: Rest) => void;
+  onSkip: () => void;
+}) {
+  const [now, setNow] = useState(Date.now());
+  const alerted = useRef(false);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, []);
+
+  // a fresh rest period re-arms the alert
+  useEffect(() => {
+    alerted.current = false;
+  }, [rest.endsAt]);
+
+  const remaining = Math.round((rest.endsAt - now) / 1000);
+
+  useEffect(() => {
+    if (remaining <= 0 && !alerted.current) {
+      alerted.current = true;
+      playRestDoneChime();
+      if ('vibrate' in navigator) navigator.vibrate?.([300, 120, 300]);
+    }
+  }, [remaining]);
+
+  const done = remaining <= 0;
+  const pct = done ? 100 : Math.min(100, (1 - remaining / rest.total) * 100);
+  const adjust = (delta: number) =>
+    onChange({ ...rest, endsAt: rest.endsAt + delta * 1000 });
+
+  return (
+    <div className={`rest-bar${done ? ' done' : ''}`}>
+      <div className="rest-progress" style={{ width: `${pct}%` }} />
+      <div className="rest-row">
+        <span className="rest-label">
+          {done ? "💪 Rest's up!" : `⏱ Rest ${mmss(remaining)}`}
+        </span>
+        <div className="rest-actions">
+          {!done && (
+            <>
+              <button className="btn small" onClick={() => adjust(-15)}>
+                −15s
+              </button>
+              <button className="btn small" onClick={() => adjust(15)}>
+                +15s
+              </button>
+            </>
+          )}
+          <button className="btn small primary" onClick={onSkip}>
+            {done ? 'Dismiss' : 'Skip'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function useElapsed(startIso: string): string {
   const [, tick] = useState(0);
@@ -36,6 +145,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [picking, setPicking] = useState(false);
   const [confirm, setConfirm] = useState<'finish' | 'discard' | null>(null);
   const [infoFor, setInfoFor] = useState<string | null>(null);
+  const [rest, setRest] = useState<Rest | null>(null);
+  const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
 
   // template day targets, to show "3 × 8–12" next to each exercise
   const targets = useMemo(() => {
@@ -75,7 +186,13 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
       ),
     }));
 
-  const toggleSet = (ei: number, si: number) =>
+  const toggleSet = (ei: number, si: number) => {
+    const willComplete = !w.exercises[ei]?.sets[si]?.completed;
+    // Ticking a set off starts the rest countdown; un-ticking does nothing.
+    if (willComplete && restSeconds > 0) {
+      ensureAudio(); // unlock audio within this tap so the chime can play later
+      setRest({ endsAt: Date.now() + restSeconds * 1000, total: restSeconds });
+    }
     updateActiveWorkout((wk) => ({
       ...wk,
       exercises: wk.exercises.map((e, i) =>
@@ -89,6 +206,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           : e,
       ),
     }));
+  };
 
   const infoExercise = infoFor ? getExercise(infoFor) : undefined;
 
@@ -309,6 +427,14 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
             ) : null;
           })()}
         </Modal>
+      )}
+
+      {rest && (
+        <RestTimer
+          rest={rest}
+          onChange={setRest}
+          onSkip={() => setRest(null)}
+        />
       )}
 
       {confirm && (

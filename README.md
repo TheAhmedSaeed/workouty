@@ -11,6 +11,9 @@ locally in your browser.
 - **Workout logging** — start a day from a plan and the app shows what you did
   **last time** (weights, reps, sets) and pre-fills your sets. Tick sets off
   as you go, add/remove sets and exercises freely.
+- **Rest timer** — ticking a set off starts a rest countdown; the app chimes
+  and vibrates when it's time for your next set. Add/subtract 15s or skip on
+  the fly, and set your default rest length (or turn it off) in Settings.
 - **Exercise database** — 50+ built-in exercises, each explaining what it does
   and which muscles it targets (primary and secondary). Add your own custom
   exercises too.

@@ -371,6 +371,50 @@ input::-webkit-inner-spin-button {
   font-weight: 600;
 }
 
+/* ── Rest timer bar ─────────────────────────────────────── */
+.rest-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 560px;
+  background: var(--bg-elev);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  z-index: 60;
+  overflow: hidden;
+}
+.rest-bar.done {
+  background: var(--accent-soft);
+}
+.rest-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--accent);
+  transition: width 0.25s linear;
+}
+.rest-bar.done .rest-progress {
+  background: var(--green);
+}
+.rest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rest-label {
+  font-weight: 800;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+.rest-actions {
+  display: flex;
+  gap: 6px;
+}
+
 /* ── Muscle coverage bars ───────────────────────────────── */
 .muscle-row {
   display: grid;

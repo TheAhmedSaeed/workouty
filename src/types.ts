@@ -117,9 +117,17 @@ export type Unit = 'kg' | 'lb';
 
 export interface Settings {
   unit: Unit;
+  /**
+   * Seconds to rest after completing a set. The workout screen starts a
+   * countdown each time you tick a set off. 0 disables the rest timer.
+   */
+  restTimerSeconds?: number;
   /** When settings last changed — newer side wins when devices sync. */
   updatedAt?: string;
 }
+
+/** Default rest-timer length when the user hasn't picked one. */
+export const DEFAULT_REST_SECONDS = 90;
 
 export interface AppState {
   version: 1;

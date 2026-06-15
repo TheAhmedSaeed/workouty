@@ -1,6 +1,15 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { SETUP_SQL } from '../lib/sync';
+import { DEFAULT_REST_SECONDS } from '../types';
+
+const REST_PRESETS = [0, 60, 90, 120, 180];
+
+function restLabel(s: number): string {
+  if (s === 0) return 'Off';
+  if (s % 60 === 0) return `${s / 60} min`;
+  return `${s}s`;
+}
 
 export function SettingsPage() {
   const { state, setSettings, exportData, importData, sync } = useStore();
@@ -41,6 +50,26 @@ export function SettingsPage() {
         >
           Pounds (lb)
         </button>
+      </div>
+
+      <div className="section-title">Rest timer</div>
+      <p className="muted" style={{ marginTop: 0 }}>
+        After you tick a set off, the workout screen counts down your rest and
+        alerts you when it's time for the next set.
+      </p>
+      <div className="seg">
+        {REST_PRESETS.map((s) => {
+          const active = (state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS) === s;
+          return (
+            <button
+              key={s}
+              className={active ? 'active' : ''}
+              onClick={() => setSettings({ restTimerSeconds: s })}
+            >
+              {restLabel(s)}
+            </button>
+          );
+        })}
       </div>
 
       <div className="section-title">Cloud sync</div>
