@@ -594,6 +594,15 @@ input::-webkit-inner-spin-button {
   font-size: 1.05rem;
   padding: 15px 0;
 }
+.rest-notify-enable {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 6px 12px;
+}
+.rest-notify-enable:active {
+  color: var(--accent);
+}
 
 /* ── Muscle coverage bars ───────────────────────────────── */
 .muscle-row {

@@ -87,11 +87,15 @@ interface Rest {
 function RestTimer({
   rest,
   notify,
+  canEnableNotify,
+  onEnableNotify,
   onChange,
   onSkip,
 }: {
   rest: Rest;
   notify: boolean;
+  canEnableNotify: boolean;
+  onEnableNotify: () => void;
   onChange: (r: Rest) => void;
   onSkip: () => void;
 }) {
@@ -165,6 +169,12 @@ function RestTimer({
       <button className="btn block primary rest-skip" onClick={onSkip}>
         Skip rest →
       </button>
+
+      {canEnableNotify && (
+        <button className="rest-notify-enable" onClick={onEnableNotify}>
+          🔔 Notify me when rest ends
+        </button>
+      )}
     </div>
   );
 }
@@ -242,6 +252,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     getExercise,
     exerciseNote,
     getProgression,
+    setSettings,
     updateActiveWorkout,
     finishWorkout,
     discardWorkout,
@@ -255,6 +266,19 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [rest, setRest] = useState<Rest | null>(null);
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
   const restNotify = !!state.settings.restNotify;
+  const notifySupported = typeof Notification !== 'undefined';
+  const notifyActive =
+    restNotify && notifySupported && Notification.permission === 'granted';
+  // offer the in-timer enable button until alerts are actually on (and allowed)
+  const canEnableNotify =
+    notifySupported && Notification.permission !== 'denied' && !notifyActive;
+
+  // enable rest notifications straight from the timer — the tap is the gesture
+  // browsers require to ask for permission
+  const enableRestNotify = async () => {
+    if (Notification.permission === 'default') await Notification.requestPermission();
+    setSettings({ restNotify: true });
+  };
   // computed once for the session — the warm-up is a start-of-workout thing
   const [warmup] = useState(() => buildWarmup(w.exercises, getExercise, unit));
 
@@ -581,6 +605,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         <RestTimer
           rest={rest}
           notify={restNotify}
+          canEnableNotify={canEnableNotify}
+          onEnableNotify={enableRestNotify}
           onChange={setRest}
           onSkip={() => setRest(null)}
         />
