@@ -38,28 +38,33 @@ function playRestDoneChime(): void {
   });
 }
 
-/** Whether browser notifications are usable (API present + permission granted). */
-function canNotify(): boolean {
-  return typeof Notification !== 'undefined' && Notification.permission === 'granted';
-}
-
 /** Fire a "rest's up" browser notification (best-effort; the chime still plays). */
-function showRestDoneNotification(): void {
-  if (!canNotify()) return;
+async function showRestDoneNotification(): Promise<void> {
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted')
+    return;
+  const options: NotificationOptions = {
+    body: 'Time for your next set.',
+    tag: 'workouty-rest',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+  };
   try {
-    const n = new Notification("Rest's up! 💪", {
-      body: 'Time for your next set.',
-      tag: 'workouty-rest',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
-    });
+    // Android Chrome forbids `new Notification()` — it requires the service
+    // worker's showNotification(). Use the SW when one is registered.
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg) {
+        await reg.showNotification("Rest's up! 💪", options);
+        return;
+      }
+    }
+    const n = new Notification("Rest's up! 💪", options);
     n.onclick = () => {
       window.focus();
       n.close();
     };
   } catch {
-    // mobile browsers without an active service worker can't use the
-    // Notification constructor — the in-app chime + vibration still cover it
+    // best-effort — the in-app chime + vibration still cover it
   }
 }
 
@@ -113,33 +118,54 @@ function RestTimer({
   }, [remaining, notify]);
 
   const done = remaining <= 0;
-  const pct = done ? 100 : Math.min(100, (1 - remaining / rest.total) * 100);
+  const fraction = done ? 0 : Math.max(0, Math.min(1, remaining / rest.total));
+  const R = 130;
+  const C = 2 * Math.PI * R;
   const adjust = (delta: number) =>
-    onChange({ ...rest, endsAt: rest.endsAt + delta * 1000 });
+    onChange({
+      ...rest,
+      endsAt: Math.max(Date.now(), rest.endsAt + delta * 1000),
+      total: Math.max(rest.total + delta, 1),
+    });
 
   return (
-    <div className={`rest-bar${done ? ' done' : ''}`}>
-      <div className="rest-progress" style={{ width: `${pct}%` }} />
-      <div className="rest-row">
-        <span className="rest-label">
-          {done ? "💪 Rest's up!" : `⏱ Rest ${mmss(remaining)}`}
-        </span>
-        <div className="rest-actions">
-          {!done && (
-            <>
-              <button className="btn small" onClick={() => adjust(-15)}>
-                −15s
-              </button>
-              <button className="btn small" onClick={() => adjust(15)}>
-                +15s
-              </button>
-            </>
-          )}
-          <button className="btn small primary" onClick={onSkip}>
-            {done ? 'Dismiss' : 'Skip'}
-          </button>
+    <div className={`rest-overlay${done ? ' done' : ''}`} role="dialog" aria-label="Rest timer">
+      <div className="rest-overlay-head">{done ? "Rest's up!" : 'Rest'}</div>
+
+      <div className="rest-ring">
+        <svg viewBox="0 0 300 300">
+          <circle className="rest-ring-track" cx="150" cy="150" r={R} />
+          <circle
+            className="rest-ring-fill"
+            cx="150"
+            cy="150"
+            r={R}
+            strokeDasharray={C}
+            strokeDashoffset={C * (1 - fraction)}
+            transform="rotate(-90 150 150)"
+          />
+        </svg>
+        <div className="rest-ring-center">
+          <div className="rest-ring-time">{mmss(remaining)}</div>
+          <div className="rest-ring-sub">{done ? 'time for your next set' : 'remaining'}</div>
         </div>
       </div>
+
+      <div className="rest-overlay-adjust">
+        <button className="btn rest-adjust" onClick={() => adjust(-15)}>
+          −15s
+        </button>
+        <button className="btn rest-adjust" onClick={() => adjust(15)}>
+          +15s
+        </button>
+      </div>
+
+      <button
+        className={`btn block ${done ? 'success' : 'primary'} rest-skip`}
+        onClick={onSkip}
+      >
+        {done ? '✓ Done' : 'Skip rest →'}
+      </button>
     </div>
   );
 }

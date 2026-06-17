@@ -134,13 +134,40 @@ function RestNotifyToggle() {
     );
   }
 
+  const ensurePermission = async (): Promise<NotificationPermission> => {
+    let p = Notification.permission;
+    if (p === 'default') {
+      p = await Notification.requestPermission();
+      setPerm(p);
+    }
+    return p;
+  };
+
   const toggle = async () => {
     const next = !on;
-    if (next && Notification.permission === 'default') {
-      const result = await Notification.requestPermission();
-      setPerm(result);
-    }
+    if (next) await ensurePermission();
     setSettings({ restNotify: next });
+  };
+
+  const sendTest = async () => {
+    const p = await ensurePermission();
+    if (p !== 'granted') return;
+    const options: NotificationOptions = {
+      body: 'Notifications are working ✅',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: 'workouty-test',
+    };
+    try {
+      const reg =
+        'serviceWorker' in navigator
+          ? await navigator.serviceWorker.getRegistration()
+          : undefined;
+      if (reg) await reg.showNotification('Workouty', options);
+      else new Notification('Workouty', options);
+    } catch {
+      // ignore — the verdict text below tells the user if it's blocked
+    }
   };
 
   return (
@@ -149,16 +176,21 @@ function RestNotifyToggle() {
         <span>🔔 Notify me when rest is over</span>
         <input type="checkbox" checked={on} onChange={toggle} />
       </label>
-      {on && perm === 'denied' && (
+      {perm === 'denied' ? (
         <p className="faint">
           Notifications are blocked for this site. Enable them in your browser's
           site settings to get rest alerts (the chime still plays meanwhile).
         </p>
+      ) : (
+        <button className="btn small" onClick={sendTest}>
+          Send a test notification
+        </button>
       )}
       {on && perm === 'granted' && (
-        <p className="faint">
-          You'll get a notification when the rest countdown ends. On phones this
-          works best while the app is open.
+        <p className="faint" style={{ marginTop: 8 }}>
+          You'll get a notification when the rest countdown ends. On phones,
+          install the app (Add to Home Screen) and keep it open for the most
+          reliable alerts.
         </p>
       )}
     </>
