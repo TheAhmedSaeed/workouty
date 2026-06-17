@@ -12,6 +12,10 @@ locally in your browser.
   **last time** (weights, reps, sets) and pre-fills your sets. Enter your first
   set and the weight/reps flow down to the remaining sets automatically. Tick
   sets off as you go, add/remove sets and exercises freely.
+- **Tailored warm-up** — when you start a session the app lays out a clear
+  warm-up checklist built from that day's exercises: light cardio, dynamic
+  mobility for the muscles you're about to train, and ramp-up sets scaled to
+  your working weight on the main lift.
 - **Rest timer** — ticking a set off starts a rest countdown; the app chimes
   and vibrates when it's time for your next set, and can pop a browser
   notification too (opt-in in Settings). Add/subtract 15s or skip on the fly,

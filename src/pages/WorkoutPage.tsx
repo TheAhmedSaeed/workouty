@@ -5,6 +5,7 @@ import { ExerciseInfo } from '../components/ExerciseInfo';
 import { Modal } from '../components/Modal';
 import { lastPerformance, personalRecord } from '../lib/stats';
 import { incrementFor, nextWeight, readyToProgress } from '../lib/progression';
+import { buildWarmup, WarmupStep } from '../lib/warmup';
 import { formatDate } from '../lib/utils';
 import { DEFAULT_REST_SECONDS } from '../types';
 
@@ -170,6 +171,58 @@ function RestTimer({
   );
 }
 
+/**
+ * Collapsible, tailored warm-up shown at the top of the session: a clear
+ * checklist of cardio, mobility for today's muscles, and ramp-up sets.
+ */
+function WarmupPanel({ steps }: { steps: WarmupStep[] }) {
+  const [open, setOpen] = useState(true);
+  const [done, setDone] = useState<boolean[]>(() => steps.map(() => false));
+
+  if (steps.length === 0) return null;
+  const doneCount = done.filter(Boolean).length;
+  const allDone = doneCount === steps.length;
+
+  return (
+    <div className={`warmup${allDone ? ' complete' : ''}`}>
+      <button className="warmup-head" onClick={() => setOpen((o) => !o)}>
+        <span className="warmup-title">
+          {allDone ? '✅' : '🔥'} Warm-up
+          <span className="faint"> · {doneCount}/{steps.length} done</span>
+        </span>
+        <span className="warmup-caret">{open ? '▾' : '▸'}</span>
+      </button>
+      {open && (
+        <div className="warmup-body">
+          {steps.map((s, i) => (
+            <label className={`warmup-step${done[i] ? ' done' : ''}`} key={i}>
+              <input
+                type="checkbox"
+                checked={done[i]}
+                onChange={() =>
+                  setDone((d) => d.map((v, j) => (j === i ? !v : v)))
+                }
+              />
+              <span className="warmup-step-main">
+                <span className="warmup-step-title">
+                  {s.icon} {s.title}
+                </span>
+                {s.detail && (
+                  <span className="warmup-step-detail">{s.detail}</span>
+                )}
+              </span>
+            </label>
+          ))}
+          <p className="faint warmup-foot">
+            Warming up primes your muscles and joints and lowers injury risk.
+            Already warm? Just tick them off or collapse this.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function useElapsed(startIso: string): string {
   const [, tick] = useState(0);
   useEffect(() => {
@@ -204,6 +257,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [rest, setRest] = useState<Rest | null>(null);
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
   const restNotify = !!state.settings.restNotify;
+  // computed once for the session — the warm-up is a start-of-workout thing
+  const [warmup] = useState(() => buildWarmup(w.exercises, getExercise, unit));
 
   // template day targets, to show "3 × 8–12" and drive progression hints
   const { targets, repsMax } = useMemo(() => {
@@ -297,6 +352,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
       <div className="faint" style={{ marginBottom: 16 }}>
         {doneSets} sets completed
       </div>
+
+      <WarmupPanel steps={warmup} />
 
       {w.exercises.map((we, ei) => {
         const ex = getExercise(we.exerciseId);
