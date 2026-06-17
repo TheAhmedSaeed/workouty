@@ -116,11 +116,11 @@ function RestTimer({
       playRestDoneChime();
       if ('vibrate' in navigator) navigator.vibrate?.([300, 120, 300]);
       if (notify) showRestDoneNotification();
+      onSkip(); // time's up — hide the overlay automatically, no tap needed
     }
-  }, [remaining, notify]);
+  }, [remaining, notify, onSkip]);
 
-  const done = remaining <= 0;
-  const fraction = done ? 0 : Math.max(0, Math.min(1, remaining / rest.total));
+  const fraction = Math.max(0, Math.min(1, remaining / rest.total));
   const R = 130;
   const C = 2 * Math.PI * R;
   const adjust = (delta: number) =>
@@ -131,8 +131,8 @@ function RestTimer({
     });
 
   return (
-    <div className={`rest-overlay${done ? ' done' : ''}`} role="dialog" aria-label="Rest timer">
-      <div className="rest-overlay-head">{done ? "Rest's up!" : 'Rest'}</div>
+    <div className="rest-overlay" role="dialog" aria-label="Rest timer">
+      <div className="rest-overlay-head">Rest</div>
 
       <div className="rest-ring">
         <svg viewBox="0 0 300 300">
@@ -149,7 +149,7 @@ function RestTimer({
         </svg>
         <div className="rest-ring-center">
           <div className="rest-ring-time">{mmss(remaining)}</div>
-          <div className="rest-ring-sub">{done ? 'time for your next set' : 'remaining'}</div>
+          <div className="rest-ring-sub">remaining</div>
         </div>
       </div>
 
@@ -162,11 +162,8 @@ function RestTimer({
         </button>
       </div>
 
-      <button
-        className={`btn block ${done ? 'success' : 'primary'} rest-skip`}
-        onClick={onSkip}
-      >
-        {done ? '✓ Done' : 'Skip rest →'}
+      <button className="btn block primary rest-skip" onClick={onSkip}>
+        Skip rest →
       </button>
     </div>
   );
