@@ -57,6 +57,9 @@ locally in your browser.
   on sync (union by id with tombstoned deletions), so workouts logged on two
   devices are never lost. The in-progress workout always stays local.
 - kg / lb unit support.
+- **Arabic numerals** — type Eastern Arabic-Indic / Persian digits
+  (٠١٢٣٤٥٦٧٨٩) into any weight, reps or rep-range field and they're converted
+  to Western digits automatically.
 
 ## Cloud sync setup (one time, ~3 minutes)
 

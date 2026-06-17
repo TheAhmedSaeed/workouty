@@ -3,6 +3,8 @@ import { Exercise, MUSCLE_LABELS } from '../types';
 import { demoFrames, youtubeSearchUrl } from '../data/demos';
 import { useStore } from '../state/store';
 import { defaultIncrement } from '../lib/progression';
+import { toWesternDigits } from '../lib/numerals';
+import { NumberInput } from './NumberInput';
 
 /**
  * Animated how-to demonstration: alternates the start/end position photos
@@ -135,14 +137,12 @@ function ProgressionEditor({ exerciseId }: { exerciseId: string }) {
       <div className="prog-row">
         <span>Weight step</span>
         <span className="prog-step">
-          <input
-            type="number"
-            inputMode="decimal"
+          <NumberInput
             value={prog.increment ?? ''}
             placeholder={String(defaultIncrement(ex, unit))}
-            onChange={(e) =>
+            onValue={(n) =>
               setProgression(exerciseId, {
-                increment: Number(e.target.value) || undefined,
+                increment: n || undefined,
               })
             }
           />
@@ -168,11 +168,11 @@ function ProgressionEditor({ exerciseId }: { exerciseId: string }) {
       ) : (
         <div className="row">
           <input
-            type="number"
+            type="text"
             inputMode="decimal"
             placeholder={`Set a target to chase (${unit})`}
             value={target}
-            onChange={(e) => setTarget(e.target.value)}
+            onChange={(e) => setTarget(toWesternDigits(e.target.value))}
           />
           <button
             className="btn small primary"

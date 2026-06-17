@@ -238,7 +238,7 @@ describe('app UI', () => {
 
     // log the first set of the first exercise (Squat)
     const weightInputs = screen
-      .getAllByRole('spinbutton')
+      .getAllByRole('textbox')
       .filter((i) => (i as HTMLInputElement).placeholder === '0');
     fireEvent.change(weightInputs[0], { target: { value: '100' } });
     fireEvent.change(weightInputs[1], { target: { value: '5' } });
@@ -273,11 +273,26 @@ describe('app UI', () => {
     fireEvent.click(screen.getByText('✓ Save this plan'));
     fireEvent.click(screen.getAllByText('Start')[0]);
 
-    const nums = () => screen.getAllByRole('spinbutton') as HTMLInputElement[];
+    const nums = () => screen.getAllByRole('textbox') as HTMLInputElement[];
     // first exercise's first-set weight is the very first number input
     fireEvent.change(nums()[0], { target: { value: '60' } });
     // the same weight should now appear in at least one later set
     expect(nums().filter((i) => i.value === '60').length).toBeGreaterThan(1);
+  });
+
+  it('accepts Arabic-Indic numerals and converts them to Western digits', () => {
+    renderApp();
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('✨ Generate for me'));
+    fireEvent.click(screen.getByText('3 days'));
+    fireEvent.click(screen.getByText('Build muscle'));
+    fireEvent.click(screen.getByText('✨ Generate plan'));
+    fireEvent.click(screen.getByText('✓ Save this plan'));
+    fireEvent.click(screen.getAllByText('Start')[0]);
+
+    const first = screen.getAllByRole('textbox')[0] as HTMLInputElement;
+    fireEvent.change(first, { target: { value: '١٢٠' } }); // 120 in Arabic-Indic
+    expect(first.value).toBe('120');
   });
 
   it('imports a pasted JSON plan via the Import option', () => {
@@ -321,7 +336,7 @@ describe('app UI', () => {
 
     // first session: log 60kg x 8
     fireEvent.click(screen.getAllByText('Start')[0]);
-    const inputs = screen.getAllByRole('spinbutton');
+    const inputs = screen.getAllByRole('textbox');
     fireEvent.change(inputs[0], { target: { value: '60' } });
     fireEvent.change(inputs[1], { target: { value: '8' } });
     fireEvent.click(screen.getAllByText('✓')[0]);
@@ -332,7 +347,7 @@ describe('app UI', () => {
     fireEvent.click(screen.getAllByText('Start')[0]);
     expect(screen.getByText(/Last time/)).toBeTruthy();
     expect(screen.getByText('60 kg × 8')).toBeTruthy();
-    const prefilled = screen.getAllByRole('spinbutton') as HTMLInputElement[];
+    const prefilled = screen.getAllByRole('textbox') as HTMLInputElement[];
     expect(prefilled[0].value).toBe('60');
     expect(prefilled[1].value).toBe('8');
   });

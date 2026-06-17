@@ -3,6 +3,7 @@ import { Template, TemplateDay } from '../types';
 import { useStore } from '../state/store';
 import { Modal } from '../components/Modal';
 import { ExercisePicker } from '../components/ExercisePicker';
+import { NumberInput } from '../components/NumberInput';
 import { uid } from '../lib/utils';
 
 /** Create or edit a plan: days, exercises, target sets and rep ranges. */
@@ -100,52 +101,43 @@ export function TemplateEditor({
                     {ex?.name ?? 'Unknown exercise'}
                   </div>
                 </div>
-                <input
-                  type="number"
+                <NumberInput
+                  decimal={false}
                   style={{ width: 52, textAlign: 'center' }}
                   value={te.targetSets}
-                  min={1}
-                  onChange={(e) =>
+                  onValue={(n) =>
                     updateDay(day.id, (d) => ({
                       ...d,
                       exercises: d.exercises.map((x, xi) =>
-                        xi === i
-                          ? { ...x, targetSets: Number(e.target.value) || 1 }
-                          : x,
+                        xi === i ? { ...x, targetSets: n || 1 } : x,
                       ),
                     }))
                   }
                 />
                 <span className="faint">×</span>
-                <input
-                  type="number"
+                <NumberInput
+                  decimal={false}
                   style={{ width: 48, textAlign: 'center' }}
                   value={te.targetRepsMin}
-                  min={1}
-                  onChange={(e) =>
+                  onValue={(n) =>
                     updateDay(day.id, (d) => ({
                       ...d,
                       exercises: d.exercises.map((x, xi) =>
-                        xi === i
-                          ? { ...x, targetRepsMin: Number(e.target.value) || 1 }
-                          : x,
+                        xi === i ? { ...x, targetRepsMin: n || 1 } : x,
                       ),
                     }))
                   }
                 />
                 <span className="faint">–</span>
-                <input
-                  type="number"
+                <NumberInput
+                  decimal={false}
                   style={{ width: 48, textAlign: 'center' }}
                   value={te.targetRepsMax}
-                  min={1}
-                  onChange={(e) =>
+                  onValue={(n) =>
                     updateDay(day.id, (d) => ({
                       ...d,
                       exercises: d.exercises.map((x, xi) =>
-                        xi === i
-                          ? { ...x, targetRepsMax: Number(e.target.value) || 1 }
-                          : x,
+                        xi === i ? { ...x, targetRepsMax: n || 1 } : x,
                       ),
                     }))
                   }

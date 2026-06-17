@@ -3,6 +3,7 @@ import { useStore } from '../state/store';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { ExerciseInfo } from '../components/ExerciseInfo';
 import { Modal } from '../components/Modal';
+import { NumberInput } from '../components/NumberInput';
 import { lastPerformance, personalRecord } from '../lib/stats';
 import { incrementFor, nextWeight, readyToProgress } from '../lib/progression';
 import { buildWarmup, WarmupStep } from '../lib/warmup';
@@ -441,22 +442,19 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                   <span className="set-prev">
                     {p ? `${p.weight} ${unit} × ${p.reps}` : '—'}
                   </span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    value={s.weight || ''}
+                  <NumberInput
+                    value={s.weight}
                     placeholder={p ? String(p.weight) : '0'}
-                    onChange={(e) =>
-                      setField(ei, si, 'weight', Number(e.target.value) || 0)
+                    onValue={(n) =>
+                      setField(ei, si, 'weight', Number.isNaN(n) ? 0 : n)
                     }
                   />
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    value={s.reps || ''}
+                  <NumberInput
+                    decimal={false}
+                    value={s.reps}
                     placeholder={p ? String(p.reps) : '0'}
-                    onChange={(e) =>
-                      setField(ei, si, 'reps', Number(e.target.value) || 0)
+                    onValue={(n) =>
+                      setField(ei, si, 'reps', Number.isNaN(n) ? 0 : n)
                     }
                   />
                   <button
