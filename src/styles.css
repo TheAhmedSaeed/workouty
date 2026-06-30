@@ -406,6 +406,13 @@ input::-webkit-inner-spin-button {
   color: var(--accent);
 }
 
+.replace-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 8px;
+}
+
 .toggle-row {
   display: flex;
   align-items: center;

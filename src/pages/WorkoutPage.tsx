@@ -7,8 +7,9 @@ import { NumberInput } from '../components/NumberInput';
 import { lastPerformance, personalRecord } from '../lib/stats';
 import { incrementFor, nextWeight, readyToProgress } from '../lib/progression';
 import { buildWarmup, WarmupStep } from '../lib/warmup';
+import { similarExercises } from '../lib/similar';
 import { formatDate } from '../lib/utils';
-import { DEFAULT_REST_SECONDS } from '../types';
+import { DEFAULT_REST_SECONDS, Exercise, MUSCLE_LABELS } from '../types';
 
 // One shared AudioContext, unlocked on a user gesture (ticking a set), so the
 // rest-over chime can still play later when the countdown reaches zero.
@@ -231,6 +232,75 @@ function WarmupPanel({ steps }: { steps: WarmupStep[] }) {
   );
 }
 
+/**
+ * "Replace for today" picker: when a machine is busy, suggest substitute
+ * exercises that train the same muscles, best match first, with a fall-back
+ * to the full exercise list. Swapping only changes the active workout — the
+ * plan is left untouched.
+ */
+function ReplaceExerciseModal({
+  target,
+  existingIds,
+  onPick,
+  onClose,
+}: {
+  target: Exercise;
+  existingIds: string[];
+  onPick: (exerciseId: string) => void;
+  onClose: () => void;
+}) {
+  const { allExercises } = useStore();
+  const [browse, setBrowse] = useState(false);
+
+  const suggestions = useMemo(
+    () =>
+      similarExercises(target, allExercises, 12)
+        .filter((e) => !existingIds.includes(e.id))
+        .slice(0, 6),
+    [target, allExercises, existingIds],
+  );
+
+  if (browse)
+    return <ExercisePicker onClose={onClose} onPick={(ex) => onPick(ex.id)} />;
+
+  return (
+    <Modal title={`Replace ${target.name}`} onClose={onClose}>
+      <p className="muted" style={{ marginTop: 0 }}>
+        Machine busy or out of order? Swap in a similar exercise for today only
+        — your plan won't change.
+      </p>
+      {suggestions.length === 0 ? (
+        <p className="faint">No close matches — browse the full list below.</p>
+      ) : (
+        <>
+          <div className="faint" style={{ marginBottom: 6 }}>
+            Similar exercises (same muscles)
+          </div>
+          {suggestions.map((ex) => (
+            <button
+              key={ex.id}
+              className="card clickable replace-option"
+              onClick={() => onPick(ex.id)}
+            >
+              <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{ex.name}</div>
+              <div className="faint">
+                {ex.primaryMuscles.map((m) => MUSCLE_LABELS[m]).join(', ')}
+              </div>
+            </button>
+          ))}
+        </>
+      )}
+      <button
+        className="btn block"
+        style={{ marginTop: 10 }}
+        onClick={() => setBrowse(true)}
+      >
+        🔍 Browse all exercises…
+      </button>
+    </Modal>
+  );
+}
+
 function useElapsed(startIso: string): string {
   const [, tick] = useState(0);
   useEffect(() => {
@@ -262,6 +332,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const hidePrev = !!state.settings.hidePrevious;
   const elapsed = useElapsed(w.startedAt);
   const [picking, setPicking] = useState(false);
+  const [replacing, setReplacing] = useState<number | null>(null);
   const [confirm, setConfirm] = useState<'finish' | 'discard' | null>(null);
   const [infoFor, setInfoFor] = useState<string | null>(null);
   const [rest, setRest] = useState<Rest | null>(null);
@@ -328,6 +399,34 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           : e,
       ),
     }));
+
+  // Swap an exercise for today only (busy machine, etc.) — re-seed its sets
+  // from the substitute's own history, keeping the plan untouched.
+  const replaceExercise = (ei: number, newId: string) => {
+    const prev = lastPerformance(state.workouts, newId);
+    const tgt = getProgression(newId).target;
+    updateActiveWorkout((wk) => ({
+      ...wk,
+      exercises: wk.exercises.map((e, i) => {
+        if (i !== ei) return e;
+        const count = Math.max(e.sets.length, prev?.sets.length ?? 0, 1);
+        return {
+          exerciseId: newId,
+          sets: Array.from({ length: count }, (_, k) => ({
+            weight: nextWeight(prev?.sets[k]?.weight ?? 0, {
+              target: tgt,
+              progress: false,
+              increment: 0,
+            }),
+            reps: hidePrev ? 0 : (prev?.sets[k]?.reps ?? 0),
+            completed: false,
+            type: 'normal' as const,
+          })),
+        };
+      }),
+    }));
+    setReplacing(null);
+  };
 
   const toggleSet = (ei: number, si: number) => {
     const willComplete = !w.exercises[ei]?.sets[si]?.completed;
@@ -399,17 +498,27 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               <h3 onClick={() => setInfoFor(we.exerciseId)}>
                 {ex?.name ?? 'Unknown exercise'} ⓘ
               </h3>
-              <button
-                className="btn small danger ghost"
-                onClick={() =>
-                  updateActiveWorkout((wk) => ({
-                    ...wk,
-                    exercises: wk.exercises.filter((_, i) => i !== ei),
-                  }))
-                }
-              >
-                ✕
-              </button>
+              <div className="row" style={{ gap: 4 }}>
+                <button
+                  className="btn small ghost"
+                  title="Replace for today"
+                  onClick={() => setReplacing(ei)}
+                >
+                  ⇄ Replace
+                </button>
+                <button
+                  className="btn small danger ghost"
+                  title="Remove exercise"
+                  onClick={() =>
+                    updateActiveWorkout((wk) => ({
+                      ...wk,
+                      exercises: wk.exercises.filter((_, i) => i !== ei),
+                    }))
+                  }
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             <div className="faint" style={{ marginBottom: 10 }}>
               {target ? `Target: ${target}` : ''}
@@ -591,6 +700,21 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           }}
         />
       )}
+
+      {replacing !== null &&
+        (() => {
+          const we = w.exercises[replacing];
+          const tgt = we && getExercise(we.exerciseId);
+          if (!tgt) return null;
+          return (
+            <ReplaceExerciseModal
+              target={tgt}
+              existingIds={w.exercises.map((e) => e.exerciseId)}
+              onPick={(id) => replaceExercise(replacing, id)}
+              onClose={() => setReplacing(null)}
+            />
+          );
+        })()}
 
       {infoExercise && (
         <Modal title={infoExercise.name} onClose={() => setInfoFor(null)}>

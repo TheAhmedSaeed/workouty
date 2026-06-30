@@ -12,6 +12,10 @@ locally in your browser.
   **last time** (weights, reps, sets) and pre-fills your sets. Enter your first
   set and the weight/reps flow down to the remaining sets automatically. Tick
   sets off as you go, add/remove sets and exercises freely.
+- **Swap a busy exercise (for today)** — machine taken or out of order? Hit
+  **Replace** on any exercise mid-workout and the app suggests substitutes that
+  train the same muscles (best match first), or browse the full list. The swap
+  only affects that session — your plan stays the same.
 - **Tailored warm-up** — when you start a session the app lays out a clear
   warm-up checklist built from that day's exercises: light cardio, dynamic
   mobility for the muscles you're about to train, and ramp-up sets scaled to
