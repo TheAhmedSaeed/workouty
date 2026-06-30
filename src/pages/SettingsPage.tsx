@@ -52,6 +52,21 @@ export function SettingsPage() {
         </button>
       </div>
 
+      <div className="section-title">Logging</div>
+      <label className="toggle-row">
+        <span>🙈 Hide last time's results</span>
+        <input
+          type="checkbox"
+          checked={!!state.settings.hidePrevious}
+          onChange={(e) => setSettings({ hidePrevious: e.target.checked })}
+        />
+      </label>
+      <p className="faint" style={{ marginTop: 0 }}>
+        Hides what you did last time while logging — the “last time” line, the
+        Previous column and pre-filled reps — so past numbers don't anchor you.
+        Weight is still pre-filled and your full history is always saved.
+      </p>
+
       <div className="section-title">Rest timer</div>
       <p className="muted" style={{ marginTop: 0 }}>
         After you tick a set off, the workout screen counts down your rest and

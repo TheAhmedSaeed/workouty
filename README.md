@@ -27,6 +27,10 @@ locally in your browser.
 - **Exercise database** — 50+ built-in exercises, each explaining what it does
   and which muscles it targets (primary and secondary). Add your own custom
   exercises too.
+- **Hide last time (optional)** — a Settings toggle hides what you did last
+  time while logging (the "last time" line, the Previous column and pre-filled
+  reps) so old numbers don't anchor you into stopping early. Weight is still
+  pre-filled and your full history is always saved.
 - **Per-exercise notes** — pin a personal reminder to any exercise (e.g.
   *“machine weight excludes the bar”* or *“use the close grip”*). The note
   shows up right on the logging screen every time you train that exercise, and

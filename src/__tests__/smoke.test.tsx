@@ -350,5 +350,26 @@ describe('app UI', () => {
     const prefilled = screen.getAllByRole('textbox') as HTMLInputElement[];
     expect(prefilled[0].value).toBe('60');
     expect(prefilled[1].value).toBe('8');
+
+    // discard this session, then enable "hide last time's results"
+    fireEvent.click(screen.getByText('Discard')); // open confirm
+    const discards = screen.getAllByText('Discard');
+    fireEvent.click(discards[discards.length - 1]); // confirm in modal
+
+    fireEvent.click(screen.getByText('Settings'));
+    const hideRow = screen
+      .getByText("🙈 Hide last time's results")
+      .closest('label')!;
+    fireEvent.click(hideRow.querySelector('input')!);
+
+    // back to home (the "Start" tab) and start the day again
+    fireEvent.click(screen.getAllByText('Start')[0]);
+    fireEvent.click(screen.getAllByText('Start')[0]);
+    // the previous reps/weight readout is now hidden, reps are not pre-filled
+    expect(screen.queryByText('60 kg × 8')).toBeNull();
+    expect(screen.queryByText(/Last time \(/)).toBeNull();
+    const hidden = screen.getAllByRole('textbox') as HTMLInputElement[];
+    expect(hidden[0].value).toBe('60'); // weight still pre-filled
+    expect(hidden[1].value).toBe(''); // reps blanked so they don't anchor
   });
 });

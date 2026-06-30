@@ -259,6 +259,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   } = useStore();
   const w = state.activeWorkout!;
   const unit = state.settings.unit;
+  const hidePrev = !!state.settings.hidePrevious;
   const elapsed = useElapsed(w.startedAt);
   const [picking, setPicking] = useState(false);
   const [confirm, setConfirm] = useState<'finish' | 'discard' | null>(null);
@@ -380,6 +381,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
       {w.exercises.map((we, ei) => {
         const ex = getExercise(we.exerciseId);
         const prev = lastPerformance(state.workouts, we.exerciseId);
+        const shownPrev = hidePrev ? null : prev; // what we reveal while logging
         const target = targets.get(we.exerciseId);
         const note = exerciseNote(we.exerciseId);
         const prog = getProgression(we.exerciseId);
@@ -411,14 +413,18 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
             </div>
             <div className="faint" style={{ marginBottom: 10 }}>
               {target ? `Target: ${target}` : ''}
-              {target && prev ? ' · ' : ''}
-              {prev
-                ? `Last time (${formatDate(prev.date)}): ${prev.sets
+              {target && shownPrev ? ' · ' : ''}
+              {shownPrev
+                ? `Last time (${formatDate(shownPrev.date)}): ${shownPrev.sets
                     .map((s) => `${s.weight}×${s.reps}`)
                     .join(', ')}`
-                : !target
-                  ? 'First time doing this exercise'
-                  : ''}
+                : hidePrev
+                  ? target
+                    ? ''
+                    : '🙈 Last time hidden'
+                  : !target
+                    ? 'First time doing this exercise'
+                    : ''}
             </div>
 
             {note ? (
@@ -456,7 +462,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               <span />
             </div>
             {we.sets.map((s, si) => {
-              const p = prev?.sets[si];
+              const p = shownPrev?.sets[si];
               return (
                 <div className={`set-grid${s.completed ? ' done' : ''}`} key={si}>
                   <span className="set-num">{si + 1}</span>
@@ -573,7 +579,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                         progress: false,
                         increment: 0,
                       }),
-                      reps: prev?.sets[i]?.reps ?? 0,
+                      reps: hidePrev ? 0 : (prev?.sets[i]?.reps ?? 0),
                       completed: false,
                       type: 'normal' as const,
                     }),

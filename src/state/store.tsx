@@ -375,7 +375,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 progress,
                 increment: inc,
               }),
-              reps: prev?.sets[Math.min(i, prev.sets.length - 1)]?.reps ?? 0,
+              // leave reps blank when hiding last time, so they don't anchor you
+              reps: st.settings.hidePrevious
+                ? 0
+                : (prev?.sets[Math.min(i, prev.sets.length - 1)]?.reps ?? 0),
               completed: false,
               type: 'normal',
             };

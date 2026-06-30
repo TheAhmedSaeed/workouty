@@ -136,6 +136,11 @@ export interface Settings {
   restTimerSeconds?: number;
   /** Show a browser notification when the rest countdown reaches zero. */
   restNotify?: boolean;
+  /**
+   * Hide last time's performance while logging (the "last time" line, the
+   * Previous column and pre-filled reps), so past numbers don't anchor you.
+   */
+  hidePrevious?: boolean;
   /** When settings last changed — newer side wins when devices sync. */
   updatedAt?: string;
 }
