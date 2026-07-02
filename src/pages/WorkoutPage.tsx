@@ -110,6 +110,9 @@ function RestTimer({
   notify,
   canEnableNotify,
   onEnableNotify,
+  minimized,
+  onMinimize,
+  onExpand,
   onChange,
   onSkip,
 }: {
@@ -117,6 +120,9 @@ function RestTimer({
   notify: boolean;
   canEnableNotify: boolean;
   onEnableNotify: () => void;
+  minimized: boolean;
+  onMinimize: () => void;
+  onExpand: () => void;
   onChange: (r: Rest) => void;
   onSkip: () => void;
 }) {
@@ -155,8 +161,33 @@ function RestTimer({
       total: Math.max(rest.total + delta, 1),
     });
 
+  // Minimized: a slim bottom bar so you can see your other exercises.
+  if (minimized) {
+    const elapsedPct = Math.max(0, Math.min(100, (1 - fraction) * 100));
+    return (
+      <div className="rest-mini" role="dialog" aria-label="Rest timer (minimized)">
+        <div className="rest-mini-progress" style={{ width: `${elapsedPct}%` }} />
+        <button className="rest-mini-main" onClick={onExpand} title="Expand timer">
+          <span className="rest-mini-time">⏱ {mmss(remaining)}</span>
+          <span className="faint">rest — tap to expand</span>
+        </button>
+        <div className="rest-mini-actions">
+          <button className="btn small" onClick={() => adjust(15)}>
+            +15s
+          </button>
+          <button className="btn small primary" onClick={onSkip}>
+            Skip
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rest-overlay" role="dialog" aria-label="Rest timer">
+      <button className="rest-min-btn" onClick={onMinimize}>
+        ▾ Minimize
+      </button>
       <div className="rest-overlay-head">Rest</div>
 
       <div className="rest-ring">
@@ -361,6 +392,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     records: WorkoutRecord[];
   } | null>(null);
   const [rest, setRest] = useState<Rest | null>(null);
+  const [restMin, setRestMin] = useState(false);
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
   const restNotify = !!state.settings.restNotify;
   const notifySupported = typeof Notification !== 'undefined';
@@ -482,6 +514,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         Notification.permission === 'default'
       )
         void Notification.requestPermission();
+      setRestMin(false); // a new rest always opens full, then you can minimize
       setRest({ endsAt: Date.now() + restSeconds * 1000, total: restSeconds });
     }
     updateActiveWorkout((wk) => ({
@@ -779,6 +812,9 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           notify={restNotify}
           canEnableNotify={canEnableNotify}
           onEnableNotify={enableRestNotify}
+          minimized={restMin}
+          onMinimize={() => setRestMin(true)}
+          onExpand={() => setRestMin(false)}
           onChange={setRest}
           onSkip={() => setRest(null)}
         />
