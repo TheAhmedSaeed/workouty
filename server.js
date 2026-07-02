@@ -7,6 +7,7 @@
 // double-compression is what corrupts the HTTP/2 stream.
 
 import express from 'express';
+import compression from 'compression';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -15,6 +16,14 @@ const dist = path.join(__dirname, 'dist');
 const app = express();
 
 app.disable('x-powered-by');
+
+// Compress at the origin and advertise Content-Encoding: gzip. Railway's HTTP/2
+// edge then passes the bytes through instead of re-compressing them — which is
+// what was corrupting the stream (net::ERR_HTTP2_PROTOCOL_ERROR / blank screen).
+app.use(compression({ threshold: 0 }));
+
+// Simple liveness/version check for debugging deploys.
+app.get('/healthz', (_req, res) => res.type('text').send('ok'));
 
 app.use(
   express.static(dist, {
