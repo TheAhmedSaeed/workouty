@@ -4,10 +4,16 @@ import { ExercisePicker } from '../components/ExercisePicker';
 import { ExerciseInfo } from '../components/ExerciseInfo';
 import { Modal } from '../components/Modal';
 import { NumberInput } from '../components/NumberInput';
-import { lastPerformance, personalRecord } from '../lib/stats';
+import {
+  lastPerformance,
+  personalRecord,
+  workoutSetCount,
+  workoutVolume,
+} from '../lib/stats';
 import { incrementFor, nextWeight, readyToProgress } from '../lib/progression';
 import { buildWarmup, WarmupStep } from '../lib/warmup';
 import { similarExercises } from '../lib/similar';
+import { workoutRecords, WorkoutRecord } from '../lib/trophies';
 import { formatDate } from '../lib/utils';
 import { DEFAULT_REST_SECONDS, Exercise, MUSCLE_LABELS } from '../types';
 
@@ -349,6 +355,11 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [replacing, setReplacing] = useState<number | null>(null);
   const [confirm, setConfirm] = useState<'finish' | 'discard' | null>(null);
   const [infoFor, setInfoFor] = useState<string | null>(null);
+  const [celebrate, setCelebrate] = useState<{
+    sets: number;
+    volume: number;
+    records: WorkoutRecord[];
+  } | null>(null);
   const [rest, setRest] = useState<Rest | null>(null);
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
   const restNotify = !!state.settings.restNotify;
@@ -422,6 +433,14 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           : e,
       ),
     }));
+
+  // Save the finished workout and leave the screen (called from the
+  // post-workout celebration's Done button / dismiss).
+  const completeWorkout = () => {
+    finishWorkout();
+    setCelebrate(null);
+    onClose();
+  };
 
   // Swap an exercise for today only (busy machine, etc.) — re-seed its sets
   // from the substitute's own history, keeping the plan untouched.
@@ -779,10 +798,25 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
             <button
               className={`btn grow ${confirm === 'finish' ? 'success' : 'danger'}`}
               onClick={() => {
-                if (confirm === 'finish') finishWorkout();
-                else discardWorkout();
+                if (confirm === 'discard') {
+                  discardWorkout();
+                  setConfirm(null);
+                  onClose();
+                  return;
+                }
+                // finishing: capture records/stats now (before the workout is
+                // saved) and celebrate; the actual save happens on "Done"
+                const summary = {
+                  sets: workoutSetCount(w),
+                  volume: Math.round(workoutVolume(w)),
+                  records: workoutRecords(w, state.workouts),
+                };
                 setConfirm(null);
-                onClose();
+                if (summary.sets > 0) setCelebrate(summary);
+                else {
+                  finishWorkout();
+                  onClose();
+                }
               }}
             >
               {confirm === 'finish' ? '✓ Finish' : 'Discard'}
@@ -791,6 +825,55 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               Cancel
             </button>
           </div>
+        </Modal>
+      )}
+
+      {celebrate && (
+        <Modal title="Workout complete 💪" onClose={completeWorkout}>
+          <div className="stat-grid" style={{ marginBottom: 6 }}>
+            <div className="stat-box">
+              <div className="value">{celebrate.sets}</div>
+              <div className="label">Sets</div>
+            </div>
+            <div className="stat-box">
+              <div className="value">
+                {celebrate.volume >= 1000
+                  ? `${Math.round(celebrate.volume / 1000)}k`
+                  : celebrate.volume}
+              </div>
+              <div className="label">Volume ({unit})</div>
+            </div>
+            <div className="stat-box">
+              <div className="value">{celebrate.records.length}</div>
+              <div className="label">Records</div>
+            </div>
+          </div>
+          {celebrate.records.length > 0 ? (
+            <>
+              <p className="muted" style={{ marginBottom: 8 }}>
+                🏆 New personal record{celebrate.records.length > 1 ? 's' : ''}!
+              </p>
+              {celebrate.records.map((r) => (
+                <div key={r.exerciseId} className="pr-line">
+                  🏆 <b>{getExercise(r.exerciseId)?.name ?? 'Exercise'}</b> —{' '}
+                  {r.kind === 'e1RM'
+                    ? `est. 1RM ${r.value} ${unit}`
+                    : `${r.value} ${unit} top set`}
+                </div>
+              ))}
+            </>
+          ) : (
+            <p className="faint">
+              No new records this time — consistency wins. Keep going! 💪
+            </p>
+          )}
+          <button
+            className="btn success block"
+            style={{ marginTop: 14 }}
+            onClick={completeWorkout}
+          >
+            ✓ Done
+          </button>
         </Modal>
       )}
     </div>

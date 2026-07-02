@@ -20,6 +20,7 @@ import {
   workoutSetCount,
   workoutVolume,
 } from '../lib/stats';
+import { computeAchievements } from '../lib/trophies';
 
 const AXIS = { stroke: '#5f6c7a', fontSize: 11 } as const;
 const TOOLTIP_STYLE = {
@@ -29,7 +30,7 @@ const TOOLTIP_STYLE = {
   fontSize: 12,
 } as const;
 
-type View = 'overview' | 'exercise' | 'muscles';
+type View = 'overview' | 'trophies' | 'exercise' | 'muscles';
 
 export function AnalyticsPage() {
   const { state, getExercise, allExercises } = useStore();
@@ -53,6 +54,12 @@ export function AnalyticsPage() {
     () => (exerciseId ? exerciseHistory(state.workouts, exerciseId) : []),
     [state.workouts, exerciseId],
   );
+
+  const achievements = useMemo(
+    () => computeAchievements(state.workouts, unit),
+    [state.workouts, unit],
+  );
+  const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
   const totals = useMemo(() => {
     let volume = 0;
@@ -86,6 +93,7 @@ export function AnalyticsPage() {
         {(
           [
             ['overview', 'Overview'],
+            ['trophies', '🏆'],
             ['exercise', 'Per exercise'],
             ['muscles', 'Muscles'],
           ] as [View, string][]
@@ -158,6 +166,28 @@ export function AnalyticsPage() {
                 <Bar dataKey="workouts" fill="#d29922" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </>
+      )}
+
+      {view === 'trophies' && (
+        <>
+          <p className="muted" style={{ marginTop: 0 }}>
+            🏆 {unlockedCount} of {achievements.length} trophies unlocked. Keep
+            training to earn the rest.
+          </p>
+          <div className="trophy-grid">
+            {achievements.map((a) => (
+              <div
+                key={a.id}
+                className={`trophy${a.unlocked ? ' won' : ' locked'}`}
+                title={a.description}
+              >
+                <div className="trophy-icon">{a.unlocked ? a.icon : '🔒'}</div>
+                <div className="trophy-title">{a.title}</div>
+                <div className="trophy-sub">{a.description}</div>
+              </div>
+            ))}
           </div>
         </>
       )}

@@ -244,9 +244,10 @@ describe('app UI', () => {
     fireEvent.change(weightInputs[1], { target: { value: '5' } });
     fireEvent.click(screen.getAllByText('✓')[0]);
 
-    // finish
+    // finish (confirm → post-workout celebration → done)
     fireEvent.click(screen.getByText('✓ Finish workout'));
     fireEvent.click(screen.getByText('✓ Finish'));
+    fireEvent.click(screen.getByText('✓ Done'));
 
     // history shows it
     fireEvent.click(screen.getByText('History'));
@@ -342,6 +343,7 @@ describe('app UI', () => {
     fireEvent.click(screen.getAllByText('✓')[0]);
     fireEvent.click(screen.getByText('✓ Finish workout'));
     fireEvent.click(screen.getByText('✓ Finish'));
+    fireEvent.click(screen.getByText('✓ Done'));
 
     // second session: previous performance is shown and pre-filled
     fireEvent.click(screen.getAllByText('Start')[0]);

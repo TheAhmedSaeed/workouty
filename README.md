@@ -49,6 +49,10 @@ locally in your browser.
 - **Analytics** — volume / sets / workouts per week, per-exercise progress
   (heaviest set, estimated 1RM, volume over time), personal records, and what
   muscles you actually trained in the last 7/30 days.
+- **Trophies** — Strong-style achievements you unlock as you train (workout
+  count, total volume, weekly streaks, exercise variety, sets logged), shown as
+  a trophy cabinet in Analytics. Finish a workout and you get a celebration
+  summary that calls out any new personal records (🏆).
 - **Three ways to make a new plan:**
   1. **Generate for me** — answer 3 questions (days/week, goal, experience)
      and get a complete balanced plan with a coverage preview.
