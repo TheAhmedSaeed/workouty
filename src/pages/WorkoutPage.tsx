@@ -185,9 +185,6 @@ function RestTimer({
 
   return (
     <div className="rest-overlay" role="dialog" aria-label="Rest timer">
-      <button className="rest-min-btn" onClick={onMinimize}>
-        ▾ Minimize
-      </button>
       <div className="rest-overlay-head">Rest</div>
 
       <div className="rest-ring">
@@ -220,6 +217,10 @@ function RestTimer({
 
       <button className="btn block primary rest-skip" onClick={onSkip}>
         Skip rest →
+      </button>
+
+      <button className="btn block rest-minimize" onClick={onMinimize}>
+        ▾ Minimize
       </button>
 
       {canEnableNotify && (

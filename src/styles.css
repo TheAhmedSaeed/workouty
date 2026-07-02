@@ -655,15 +655,11 @@ input::-webkit-inner-spin-button {
 .rest-notify-enable:active {
   color: var(--accent);
 }
-.rest-min-btn {
-  position: absolute;
-  top: calc(14px + env(safe-area-inset-top));
-  right: 16px;
+.rest-minimize {
+  width: min(100%, 360px);
+  font-size: 1.05rem;
+  padding: 13px 0;
   color: var(--text-dim);
-  font-size: 0.95rem;
-  font-weight: 700;
-  padding: 6px 10px;
-  border-radius: 8px;
   background: var(--bg-elev2);
 }
 
