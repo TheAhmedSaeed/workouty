@@ -203,9 +203,10 @@ function RestNotifyToggle() {
       )}
       {on && perm === 'granted' && (
         <p className="faint" style={{ marginTop: 8 }}>
-          You'll get a notification when the rest countdown ends. On phones,
-          install the app (Add to Home Screen) and keep it open for the most
-          reliable alerts.
+          You'll get a notification when rest ends — even if you switch apps or
+          lock the screen. For the most reliable alerts, install the app (Add to
+          Home Screen); very long screen-locks can still be throttled by the
+          phone.
         </p>
       )}
     </>

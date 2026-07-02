@@ -71,6 +71,20 @@ async function showRestDoneNotification(): Promise<void> {
   }
 }
 
+/** Hand the rest fire-time (or a cancel) to the service worker so the
+ * notification still fires when the app is backgrounded. */
+async function postRestToSW(
+  message: { type: 'schedule-rest'; at: number } | { type: 'cancel-rest' },
+): Promise<void> {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    reg.active?.postMessage(message);
+  } catch {
+    // no worker yet — the in-page timer still fires when foregrounded
+  }
+}
+
 function mmss(total: number): string {
   const s = Math.max(0, total);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -351,6 +365,15 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     if (Notification.permission === 'default') await Notification.requestPermission();
     setSettings({ restNotify: true });
   };
+  // Keep the service worker's scheduled rest notification in sync with the
+  // live timer, so it fires even if the phone is locked / the app backgrounded.
+  const restEndsAt = rest?.endsAt ?? null;
+  useEffect(() => {
+    if (restEndsAt && notifyActive)
+      postRestToSW({ type: 'schedule-rest', at: restEndsAt });
+    else postRestToSW({ type: 'cancel-rest' });
+  }, [restEndsAt, notifyActive]);
+
   // computed once for the session — the warm-up is a start-of-workout thing
   const [warmup] = useState(() => buildWarmup(w.exercises, getExercise, unit));
 
