@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useStore } from './state/store';
 import { HomePage } from './pages/HomePage';
 import { HistoryPage } from './pages/HistoryPage';
-import { AnalyticsPage } from './pages/AnalyticsPage';
 import { ExercisesPage } from './pages/ExercisesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { WorkoutPage } from './pages/WorkoutPage';
+
+// Analytics pulls in the heavy charting library — load it only when opened so
+// it stays out of the initial bundle.
+const AnalyticsPage = lazy(() =>
+  import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
+);
 
 type Tab = 'home' | 'history' | 'analytics' | 'exercises' | 'settings';
 
@@ -35,7 +40,11 @@ export default function App() {
               <HomePage onOpenWorkout={() => setWorkoutOpen(true)} />
             )}
             {tab === 'history' && <HistoryPage />}
-            {tab === 'analytics' && <AnalyticsPage />}
+            {tab === 'analytics' && (
+              <Suspense fallback={<div className="empty">Loading…</div>}>
+                <AnalyticsPage />
+              </Suspense>
+            )}
             {tab === 'exercises' && <ExercisesPage />}
             {tab === 'settings' && <SettingsPage />}
           </>

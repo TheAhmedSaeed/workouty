@@ -205,13 +205,13 @@ describe('custom exercise duplicate check', () => {
 });
 
 describe('app UI', () => {
-  it('renders home, navigates all tabs without crashing', () => {
+  it('renders home, navigates all tabs without crashing', async () => {
     renderApp();
     expect(screen.getByText('Workouty')).toBeTruthy();
     fireEvent.click(screen.getByText('History'));
     expect(screen.getByText(/No workouts logged yet/)).toBeTruthy();
     fireEvent.click(screen.getByText('Analytics'));
-    expect(screen.getByText(/Charts appear here/)).toBeTruthy();
+    expect(await screen.findByText(/Charts appear here/)).toBeTruthy();
     fireEvent.click(screen.getByText('Exercises'));
     expect(screen.getByText('Bench Press (Barbell)')).toBeTruthy();
     fireEvent.click(screen.getByText('Settings'));
@@ -220,7 +220,7 @@ describe('app UI', () => {
     expect(screen.getByText('☁️ Set up cloud sync')).toBeTruthy();
   });
 
-  it('full flow: generate plan, start day, log sets, finish, see history & analytics', () => {
+  it('full flow: generate plan, start day, log sets, finish, see history & analytics', async () => {
     renderApp();
 
     // generate a plan via the wizard
@@ -255,7 +255,7 @@ describe('app UI', () => {
 
     // analytics overview renders with data
     fireEvent.click(screen.getByText('Analytics'));
-    expect(screen.getByText('Total sets')).toBeTruthy();
+    expect(await screen.findByText('Total sets')).toBeTruthy();
 
     // per-exercise view has the squat
     fireEvent.click(screen.getByText('Per exercise'));
