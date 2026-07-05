@@ -9,6 +9,7 @@ import { TemplateEditor } from './TemplateEditor';
 import { GeneratorWizard } from './GeneratorWizard';
 import { AIImportModal } from './AIImportModal';
 import { ImportPlanModal } from './ImportPlanModal';
+import { StretchesModal } from './StretchesModal';
 
 export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const { state, getExercise, startWorkout, startEmptyWorkout, deleteTemplate } =
@@ -20,6 +21,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const [importOpen, setImportOpen] = useState(false);
   const [coverageFor, setCoverageFor] = useState<Template | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Template | null>(null);
+  const [stretchOpen, setStretchOpen] = useState(false);
 
   const start = (t?: Template, d?: TemplateDay) => {
     if (state.activeWorkout) {
@@ -59,6 +61,10 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
         }}
       >
         {state.activeWorkout ? '▶ Resume workout' : '🚀 Start empty workout'}
+      </button>
+
+      <button className="btn block" onClick={() => setStretchOpen(true)}>
+        🧘 Morning stretches
       </button>
 
       <div className="section-title">My plans</div>
@@ -182,6 +188,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
           onClose={() => setEditing(null)}
         />
       )}
+      {stretchOpen && <StretchesModal onClose={() => setStretchOpen(false)} />}
       {wizardOpen && <GeneratorWizard onClose={() => setWizardOpen(false)} />}
       {aiOpen && <AIImportModal onClose={() => setAiOpen(false)} />}
       {importOpen && <ImportPlanModal onClose={() => setImportOpen(false)} />}

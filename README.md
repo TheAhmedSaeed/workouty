@@ -20,6 +20,10 @@ locally in your browser.
   warm-up checklist built from that day's exercises: light cardio, dynamic
   mobility for the muscles you're about to train, and ramp-up sets scaled to
   your working weight on the main lift.
+- **Morning stretches** — a wake-up routine that targets the muscles you
+  trained the previous day (or a gentle full-body routine on rest days). Each
+  stretch has step-by-step instructions, a hold time, and a one-tap how-to
+  video.
 - **Rest timer** — ticking a set off starts a rest countdown; the app chimes
   and vibrates when it's time for your next set, and can pop a browser
   notification too (opt-in in Settings). Add/subtract 15s or skip on the fly,
