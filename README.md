@@ -11,7 +11,8 @@ locally in your browser.
 - **Workout logging** — start a day from a plan and the app shows what you did
   **last time** (weights, reps, sets) and pre-fills your sets. Enter your first
   set and the weight/reps flow down to the remaining sets automatically. Tick
-  sets off as you go, add/remove sets and exercises freely.
+  sets off as you go, add/remove sets and exercises freely. A finished exercise
+  auto-collapses to a one-line summary to save space — tap to expand it again.
 - **Swap a busy exercise (for today)** — machine taken or out of order? Hit
   **Replace** on any exercise mid-workout and the app suggests substitutes that
   train the same muscles (best match first), or browse the full list. The swap

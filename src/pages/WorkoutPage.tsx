@@ -394,6 +394,9 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   } | null>(null);
   const [rest, setRest] = useState<Rest | null>(null);
   const [restMin, setRestMin] = useState(false);
+  // per-exercise expand override (by exercise id); undefined = auto (a finished
+  // exercise auto-collapses to save space, but you can expand it back)
+  const [expandOverride, setExpandOverride] = useState<Record<string, boolean>>({});
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
   const restNotify = !!state.settings.restNotify;
   const notifySupported = typeof Notification !== 'undefined';
@@ -568,34 +571,71 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           : progressed
             ? `💪 +${incrementFor(ex, prog, unit)} ${unit} vs last time — you hit all your reps`
             : null;
+        // a fully-completed exercise auto-collapses; the user can override
+        const allDone = we.sets.length > 0 && we.sets.every((s) => s.completed);
+        const key = we.exerciseId;
+        const expanded = expandOverride[key] ?? !allDone;
+        const doneSetsList = we.sets.filter((s) => s.completed);
+        const setExpanded = (v: boolean) =>
+          setExpandOverride((o) => ({ ...o, [key]: v }));
         return (
-          <div className="exercise-block" key={ei}>
-            <div className="row between" style={{ marginBottom: 4 }}>
+          <div
+            className={`exercise-block${allDone ? ' complete' : ''}${expanded ? '' : ' collapsed'}`}
+            key={ei}
+          >
+            <div className="row between" style={{ marginBottom: expanded ? 4 : 0 }}>
               <h3 onClick={() => setInfoFor(we.exerciseId)}>
+                {allDone ? '✅ ' : ''}
                 {ex?.name ?? 'Unknown exercise'} ⓘ
               </h3>
               <div className="row" style={{ gap: 4 }}>
+                {expanded && (
+                  <>
+                    <button
+                      className="btn small ghost"
+                      title="Replace for today"
+                      onClick={() => setReplacing(ei)}
+                    >
+                      ⇄ Replace
+                    </button>
+                    <button
+                      className="btn small danger ghost"
+                      title="Remove exercise"
+                      onClick={() =>
+                        updateActiveWorkout((wk) => ({
+                          ...wk,
+                          exercises: wk.exercises.filter((_, i) => i !== ei),
+                        }))
+                      }
+                    >
+                      ✕
+                    </button>
+                  </>
+                )}
                 <button
                   className="btn small ghost"
-                  title="Replace for today"
-                  onClick={() => setReplacing(ei)}
+                  title={expanded ? 'Collapse' : 'Expand'}
+                  onClick={() => setExpanded(!expanded)}
                 >
-                  ⇄ Replace
-                </button>
-                <button
-                  className="btn small danger ghost"
-                  title="Remove exercise"
-                  onClick={() =>
-                    updateActiveWorkout((wk) => ({
-                      ...wk,
-                      exercises: wk.exercises.filter((_, i) => i !== ei),
-                    }))
-                  }
-                >
-                  ✕
+                  {expanded ? '▾' : '▸'}
                 </button>
               </div>
             </div>
+
+            {!expanded && (
+              <div className="ex-collapsed" onClick={() => setExpanded(true)}>
+                {doneSetsList.length} set{doneSetsList.length === 1 ? '' : 's'} done
+                {doneSetsList.length > 0 && (
+                  <span className="ex-collapsed-sets">
+                    {' · '}
+                    {doneSetsList.map((s) => `${s.weight}×${s.reps}`).join(', ')} {unit}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {expanded && (
+            <>
             <div className="faint" style={{ marginBottom: 10 }}>
               {target ? `Target: ${target}` : ''}
               {target && shownPrev ? ' · ' : ''}
@@ -724,6 +764,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 </button>
               )}
             </div>
+            </>
+            )}
           </div>
         );
       })}

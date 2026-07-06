@@ -328,6 +328,24 @@ input::-webkit-inner-spin-button {
   font-size: 1rem;
   color: var(--accent);
 }
+.exercise-block.collapsed {
+  padding: 12px 14px;
+}
+.exercise-block.complete {
+  border-color: rgba(63, 185, 80, 0.4);
+}
+.exercise-block.complete.collapsed {
+  background: rgba(63, 185, 80, 0.06);
+}
+.ex-collapsed {
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+.ex-collapsed-sets {
+  color: var(--text-faint);
+}
 
 /* ── Persistent per-exercise note ───────────────────────── */
 .ex-note {

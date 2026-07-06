@@ -281,6 +281,30 @@ describe('app UI', () => {
     expect(nums().filter((i) => i.value === '60').length).toBeGreaterThan(1);
   });
 
+  it('auto-collapses an exercise once all its sets are completed', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('🚀 Start empty workout'));
+    fireEvent.click(screen.getByText('＋ Add exercise'));
+    fireEvent.change(screen.getByPlaceholderText('Search by name or muscle…'), {
+      target: { value: 'Bench Press (Barbell)' },
+    });
+    fireEvent.click(screen.getByText('Bench Press (Barbell)'));
+
+    // expanded: set-check buttons and the Add set control are visible
+    const checks = screen.getAllByText('✓');
+    expect(checks.length).toBe(3);
+    expect(screen.getByText('＋ Add set')).toBeTruthy();
+
+    // complete every set → the exercise collapses
+    checks.forEach((c) => fireEvent.click(c));
+    expect(screen.queryByText('＋ Add set')).toBeNull(); // body hidden
+    expect(screen.getByText('▸')).toBeTruthy(); // expand chevron
+
+    // expand it back
+    fireEvent.click(screen.getByText('▸'));
+    expect(screen.getByText('＋ Add set')).toBeTruthy();
+  });
+
   it('accepts Arabic-Indic numerals and converts them to Western digits', () => {
     renderApp();
     fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
