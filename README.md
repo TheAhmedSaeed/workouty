@@ -29,10 +29,11 @@ locally in your browser.
   and vibrates when it's time for your next set, and can pop a browser
   notification too (opt-in in Settings). Add/subtract 15s or skip on the fly,
   and set your default rest length (or turn it off) in Settings.
-- **Progressive overload** — the app helps you add weight over time. Hit all
-  your reps at the top of the range and it pre-fills a heavier weight next
-  session (a per-exercise step you can tune), and you can set an explicit
-  target weight to chase that clears itself once you reach it.
+- **Progressive overload, on your terms** — the app never raises the weight on
+  its own. When you finish all the sets of an exercise it simply asks *"add
+  weight next time?"*; say yes and it pre-fills one step heavier next session
+  (a per-exercise step you can tune), say no and it keeps the same weight until
+  you're comfortable. You can also set an explicit target weight to chase.
 - **Exercise database** — 50+ built-in exercises, each explaining what it does
   and which muscles it targets (primary and secondary). Add your own custom
   exercises too.

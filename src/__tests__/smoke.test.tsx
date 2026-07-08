@@ -305,6 +305,30 @@ describe('app UI', () => {
     expect(screen.getByText('＋ Add set')).toBeTruthy();
   });
 
+  it('asks whether to increase weight after all sets, bumping only on yes', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('🚀 Start empty workout'));
+    fireEvent.click(screen.getByText('＋ Add exercise'));
+    fireEvent.change(screen.getByPlaceholderText('Search by name or muscle…'), {
+      target: { value: 'Bench Press (Barbell)' },
+    });
+    fireEvent.click(screen.getByText('Bench Press (Barbell)'));
+
+    // enter 100 kg × 8 on the first set (cascades to the others)
+    const nums = () => screen.getAllByRole('textbox') as HTMLInputElement[];
+    fireEvent.change(nums()[0], { target: { value: '100' } });
+    fireEvent.change(nums()[1], { target: { value: '8' } });
+
+    // complete every set → the "increase next time?" prompt appears
+    screen.getAllByText('✓').forEach((c) => fireEvent.click(c));
+    expect(screen.getByText(/Add weight to/)).toBeTruthy();
+    expect(screen.getByText(/102\.5/)).toBeTruthy(); // 100 + 2.5 default step
+
+    // say yes → the bump is queued for next time
+    fireEvent.click(screen.getByText(/Yes, \+2\.5/));
+    expect(screen.getByText(/next 102\.5/)).toBeTruthy();
+  });
+
   it('accepts Arabic-Indic numerals and converts them to Western digits', () => {
     renderApp();
     fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));

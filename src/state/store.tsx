@@ -19,7 +19,7 @@ import {
 } from '../types';
 import { EXERCISES, EXERCISE_MAP } from '../data/exercises';
 import { lastPerformance } from '../lib/stats';
-import { incrementFor, nextWeight, readyToProgress } from '../lib/progression';
+import { nextWeight } from '../lib/progression';
 import { uid } from '../lib/utils';
 import {
   SyncConfig,
@@ -358,22 +358,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         startedAt: new Date().toISOString(),
         exercises: (day?.exercises ?? []).map((te) => {
           const prev = lastPerformance(st.workouts, te.exerciseId);
-          const ex =
-            EXERCISE_MAP.get(te.exerciseId) ??
-            st.customExercises.find((e) => e.id === te.exerciseId);
           const prog = st.progressions?.[te.exerciseId];
-          const inc = incrementFor(ex, prog, st.settings.unit);
-          // bump the load when we hit all our reps at the top of the range
-          const progress =
-            !prog?.target && !!prev && readyToProgress(prev.sets, te.targetRepsMax);
           const nSets = Math.max(te.targetSets, 1);
           const sets: LoggedSet[] = Array.from({ length: nSets }, (_, i) => {
             const pw = prev?.sets[Math.min(i, prev.sets.length - 1)]?.weight ?? 0;
             return {
+              // only bump the weight if the user chose to (a target is set);
+              // otherwise repeat last time's weight — never auto-increase
               weight: nextWeight(pw, {
                 target: prog?.target,
-                progress,
-                increment: inc,
+                progress: false,
+                increment: 0,
               }),
               // leave reps blank when hiding last time, so they don't anchor you
               reps: st.settings.hidePrevious

@@ -150,7 +150,8 @@ function ProgressionEditor({ exerciseId }: { exerciseId: string }) {
         </span>
       </div>
       <p className="faint" style={{ margin: '4px 0 10px' }}>
-        Hit all your reps and the app pre-fills +{step} {unit} next time.
+        When you finish all your sets, the app asks if you want to add +{step}{' '}
+        {unit} next time — it never increases the weight on its own.
       </p>
 
       {prog.target ? (

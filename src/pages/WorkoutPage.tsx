@@ -10,7 +10,7 @@ import {
   workoutSetCount,
   workoutVolume,
 } from '../lib/stats';
-import { incrementFor, nextWeight, readyToProgress } from '../lib/progression';
+import { incrementFor, nextWeight } from '../lib/progression';
 import { buildWarmup, WarmupStep } from '../lib/warmup';
 import { similarExercises } from '../lib/similar';
 import { workoutRecords, WorkoutRecord } from '../lib/trophies';
@@ -374,6 +374,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     getExercise,
     exerciseNote,
     getProgression,
+    setProgression,
     setSettings,
     updateActiveWorkout,
     finishWorkout,
@@ -397,6 +398,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   // per-exercise expand override (by exercise id); undefined = auto (a finished
   // exercise auto-collapses to save space, but you can expand it back)
   const [expandOverride, setExpandOverride] = useState<Record<string, boolean>>({});
+  // exercises we've already asked "increase next time?" this session
+  const [askedIncrease, setAskedIncrease] = useState<Record<string, boolean>>({});
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
   const restNotify = !!state.settings.restNotify;
   const notifySupported = typeof Notification !== 'undefined';
@@ -424,20 +427,17 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   // computed once for the session — the warm-up is a start-of-workout thing
   const [warmup] = useState(() => buildWarmup(w.exercises, getExercise, unit));
 
-  // template day targets, to show "3 × 8–12" and drive progression hints
-  const { targets, repsMax } = useMemo(() => {
+  // template day targets, to show "3 × 8–12" next to each exercise
+  const targets = useMemo(() => {
     const t = state.templates.find((x) => x.id === w.templateId);
     const d = t?.days.find((x) => x.id === w.dayId);
-    const targets = new Map<string, string>();
-    const repsMax = new Map<string, number>();
-    for (const te of d?.exercises ?? []) {
-      targets.set(
+    const map = new Map<string, string>();
+    for (const te of d?.exercises ?? [])
+      map.set(
         te.exerciseId,
         `${te.targetSets} × ${te.targetRepsMin}–${te.targetRepsMax}`,
       );
-      repsMax.set(te.exerciseId, te.targetRepsMax);
-    }
-    return { targets, repsMax };
+    return map;
   }, [state.templates, w.templateId, w.dayId]);
 
   const doneSets = w.exercises.reduce(
@@ -563,19 +563,25 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         const target = targets.get(we.exerciseId);
         const note = exerciseNote(we.exerciseId);
         const prog = getProgression(we.exerciseId);
-        const rmax = repsMax.get(we.exerciseId);
-        const progressed =
-          !prog.target && !!prev && rmax != null && readyToProgress(prev.sets, rmax);
         const progHint = prog.target
           ? `🎯 Aim for ${prog.target} ${unit} — hit it to clear this target`
-          : progressed
-            ? `💪 +${incrementFor(ex, prog, unit)} ${unit} vs last time — you hit all your reps`
-            : null;
+          : null;
         // a fully-completed exercise auto-collapses; the user can override
         const allDone = we.sets.length > 0 && we.sets.every((s) => s.completed);
         const key = we.exerciseId;
         const expanded = expandOverride[key] ?? !allDone;
         const doneSetsList = we.sets.filter((s) => s.completed);
+        // heaviest weight completed this session (for the +weight prompt)
+        const topWeight = doneSetsList.reduce((m, s) => Math.max(m, s.weight), 0);
+        const inc = incrementFor(ex, prog, unit);
+        // ask "increase next time?" once an exercise is done, unless already
+        // answered this session or a target is already queued
+        const askIncrease =
+          allDone && topWeight > 0 && !askedIncrease[key] && !prog.target;
+        const answerIncrease = (yes: boolean) => {
+          setAskedIncrease((a) => ({ ...a, [key]: true }));
+          if (yes) setProgression(key, { target: topWeight + inc });
+        };
         const setExpanded = (v: boolean) =>
           setExpandOverride((o) => ({ ...o, [key]: v }));
         return (
@@ -622,6 +628,29 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               </div>
             </div>
 
+            {askIncrease && (
+              <div className="increase-ask">
+                <div>
+                  💪 All sets done! Add weight to <b>{topWeight + inc} {unit}</b>{' '}
+                  next time?
+                </div>
+                <div className="increase-ask-btns">
+                  <button
+                    className="btn small success grow"
+                    onClick={() => answerIncrease(true)}
+                  >
+                    👍 Yes, +{inc} {unit}
+                  </button>
+                  <button
+                    className="btn small grow"
+                    onClick={() => answerIncrease(false)}
+                  >
+                    Keep same
+                  </button>
+                </div>
+              </div>
+            )}
+
             {!expanded && (
               <div className="ex-collapsed" onClick={() => setExpanded(true)}>
                 {doneSetsList.length} set{doneSetsList.length === 1 ? '' : 's'} done
@@ -629,6 +658,11 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                   <span className="ex-collapsed-sets">
                     {' · '}
                     {doneSetsList.map((s) => `${s.weight}×${s.reps}`).join(', ')} {unit}
+                  </span>
+                )}
+                {prog.target && (
+                  <span className="ex-collapsed-target">
+                    {' · '}🎯 next {prog.target} {unit}
                   </span>
                 )}
               </div>

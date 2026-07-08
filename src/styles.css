@@ -346,6 +346,25 @@ input::-webkit-inner-spin-button {
 .ex-collapsed-sets {
   color: var(--text-faint);
 }
+.ex-collapsed-target {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* "increase next time?" prompt shown when an exercise is finished */
+.increase-ask {
+  background: rgba(63, 185, 80, 0.12);
+  border: 1px solid rgba(63, 185, 80, 0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 8px 0 4px;
+  font-size: 0.88rem;
+}
+.increase-ask-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
 
 /* ── Persistent per-exercise note ───────────────────────── */
 .ex-note {
