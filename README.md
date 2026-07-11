@@ -25,10 +25,12 @@ locally in your browser.
   trained the previous day (or a gentle full-body routine on rest days). Each
   stretch has step-by-step instructions, a hold time, and a one-tap how-to
   video.
-- **Rest timer** — ticking a set off starts a rest countdown; the app chimes
-  and vibrates when it's time for your next set, and can pop a browser
-  notification too (opt-in in Settings). Add/subtract 15s or skip on the fly,
-  and set your default rest length (or turn it off) in Settings.
+- **Rest timer (counts up)** — ticking a set off starts a rest timer that
+  counts up, so you always see how long you've actually rested. The ring fills
+  to your target and the app chimes / vibrates / notifies when you hit it, then
+  keeps counting until you tap Done. Add/subtract 15s, minimize it, and set your
+  default target (or turn it off) in Settings. Total rest time is saved per
+  workout and shown in the finish summary and History.
 - **Progressive overload, on your terms** — the app never raises the weight on
   its own. When you finish all the sets of an exercise it simply asks *"add
   weight next time?"*; say yes and it pre-fills one step heavier next session

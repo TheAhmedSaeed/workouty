@@ -694,6 +694,15 @@ input::-webkit-inner-spin-button {
   stroke-linecap: round;
   transition: stroke-dashoffset 0.25s linear;
 }
+.rest-overlay.reached .rest-ring-fill {
+  stroke: var(--green);
+}
+.rest-overlay.reached .rest-overlay-head {
+  color: var(--green);
+}
+.rest-mini-progress.reached {
+  background: var(--green);
+}
 .rest-ring-center {
   position: absolute;
   inset: 0;

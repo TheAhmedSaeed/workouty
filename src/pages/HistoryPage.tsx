@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../state/store';
 import { Modal } from '../components/Modal';
 import { workoutSetCount, workoutVolume } from '../lib/stats';
-import { formatDate, formatDuration, formatTime } from '../lib/utils';
+import { formatDate, formatDuration, formatRest, formatTime } from '../lib/utils';
 import { Workout } from '../types';
 
 export function HistoryPage() {
@@ -35,6 +35,7 @@ export function HistoryPage() {
             {w.exercises.length} exercises · {workoutSetCount(w)} sets ·{' '}
             {Math.round(workoutVolume(w)).toLocaleString()} {unit} volume
             {w.finishedAt ? ` · ${formatDuration(w.startedAt, w.finishedAt)}` : ''}
+            {w.restSeconds ? ` · 🛋️ ${formatRest(w.restSeconds)} rest` : ''}
           </div>
         </div>
       ))}
@@ -47,6 +48,7 @@ export function HistoryPage() {
               ? ` · ${formatDuration(open.startedAt, open.finishedAt)}`
               : ''}{' '}
             · {Math.round(workoutVolume(open)).toLocaleString()} {unit} total
+            {open.restSeconds ? ` · 🛋️ ${formatRest(open.restSeconds)} rest` : ''}
           </div>
           {open.exercises.map((we, i) => (
             <div className="card" key={i}>

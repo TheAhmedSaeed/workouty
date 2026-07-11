@@ -26,6 +26,16 @@ export function formatDuration(startIso: string, endIso: string): string {
   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
 }
 
+/** Compact duration from a number of seconds, e.g. "45s", "12m", "12m 30s". */
+export function formatRest(totalSeconds: number): string {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  if (m === 0) return `${sec}s`;
+  if (sec === 0) return `${m}m`;
+  return `${m}m ${sec}s`;
+}
+
 /** Epley estimated one-rep max. */
 export function estimate1RM(weight: number, reps: number): number {
   if (reps <= 0 || weight <= 0) return 0;

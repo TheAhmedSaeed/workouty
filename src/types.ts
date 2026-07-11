@@ -123,6 +123,8 @@ export interface Workout {
   startedAt: string;
   finishedAt?: string;
   exercises: WorkoutExercise[];
+  /** Total seconds spent on the rest timer during this workout. */
+  restSeconds?: number;
 }
 
 export type Unit = 'kg' | 'lb';

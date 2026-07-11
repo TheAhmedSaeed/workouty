@@ -14,7 +14,7 @@ import { incrementFor, nextWeight } from '../lib/progression';
 import { buildWarmup, WarmupStep } from '../lib/warmup';
 import { similarExercises } from '../lib/similar';
 import { workoutRecords, WorkoutRecord } from '../lib/trophies';
-import { formatDate } from '../lib/utils';
+import { formatDate, formatRest } from '../lib/utils';
 import { DEFAULT_REST_SECONDS, Exercise, MUSCLE_LABELS } from '../types';
 
 // One shared AudioContext, unlocked on a user gesture (ticking a set), so the
@@ -97,13 +97,15 @@ function mmss(total: number): string {
 }
 
 interface Rest {
-  endsAt: number; // epoch ms
-  total: number; // seconds, for the progress bar
+  startedAt: number; // epoch ms the rest began
+  target: number; // goal rest seconds (drives the ring + the "time's up" chime)
 }
 
 /**
- * Sticky rest countdown. Appears when a set is ticked off, beeps + vibrates
- * when time's up, and lets you add/subtract 15s or skip ahead.
+ * Rest timer that counts UP so you can see exactly how long you've rested. The
+ * ring fills toward your target and chimes when you reach it, but it keeps
+ * counting past that — you decide when you're ready and tap Done. Add/subtract
+ * 15s moves the target; Minimize shrinks it to a bottom bar.
  */
 function RestTimer({
   rest,
@@ -137,46 +139,48 @@ function RestTimer({
   // a fresh rest period re-arms the alert
   useEffect(() => {
     alerted.current = false;
-  }, [rest.endsAt]);
+  }, [rest.startedAt]);
 
-  const remaining = Math.round((rest.endsAt - now) / 1000);
+  const elapsed = Math.max(0, Math.floor((now - rest.startedAt) / 1000));
+  const reached = elapsed >= rest.target;
 
   useEffect(() => {
-    if (remaining <= 0 && !alerted.current) {
+    if (reached && !alerted.current) {
       alerted.current = true;
       playRestDoneChime();
       if ('vibrate' in navigator) navigator.vibrate?.([300, 120, 300]);
       if (notify) showRestDoneNotification();
-      onSkip(); // time's up — hide the overlay automatically, no tap needed
+      // no auto-dismiss — keep counting so you can see your total rest time
     }
-  }, [remaining, notify, onSkip]);
+  }, [reached, notify]);
 
-  const fraction = Math.max(0, Math.min(1, remaining / rest.total));
+  const fraction = Math.min(1, rest.target > 0 ? elapsed / rest.target : 1);
   const R = 130;
   const C = 2 * Math.PI * R;
+  // ±15s moves the target (the chime point); it never rewinds your elapsed time
   const adjust = (delta: number) =>
-    onChange({
-      ...rest,
-      endsAt: Math.max(Date.now(), rest.endsAt + delta * 1000),
-      total: Math.max(rest.total + delta, 1),
-    });
+    onChange({ ...rest, target: Math.max(15, rest.target + delta) });
 
   // Minimized: a slim bottom bar so you can see your other exercises.
   if (minimized) {
-    const elapsedPct = Math.max(0, Math.min(100, (1 - fraction) * 100));
     return (
       <div className="rest-mini" role="dialog" aria-label="Rest timer (minimized)">
-        <div className="rest-mini-progress" style={{ width: `${elapsedPct}%` }} />
+        <div
+          className={`rest-mini-progress${reached ? ' reached' : ''}`}
+          style={{ width: `${fraction * 100}%` }}
+        />
         <button className="rest-mini-main" onClick={onExpand} title="Expand timer">
-          <span className="rest-mini-time">⏱ {mmss(remaining)}</span>
-          <span className="faint">rest — tap to expand</span>
+          <span className="rest-mini-time">⏱ {mmss(elapsed)}</span>
+          <span className="faint">
+            {reached ? 'rested — tap to expand' : `resting / ${mmss(rest.target)}`}
+          </span>
         </button>
         <div className="rest-mini-actions">
           <button className="btn small" onClick={() => adjust(15)}>
             +15s
           </button>
           <button className="btn small primary" onClick={onSkip}>
-            Skip
+            Done
           </button>
         </div>
       </div>
@@ -184,8 +188,14 @@ function RestTimer({
   }
 
   return (
-    <div className="rest-overlay" role="dialog" aria-label="Rest timer">
-      <div className="rest-overlay-head">Rest</div>
+    <div
+      className={`rest-overlay${reached ? ' reached' : ''}`}
+      role="dialog"
+      aria-label="Rest timer"
+    >
+      <div className="rest-overlay-head">
+        {reached ? "Rest's up — go when you're ready" : 'Resting'}
+      </div>
 
       <div className="rest-ring">
         <svg viewBox="0 0 300 300">
@@ -201,8 +211,8 @@ function RestTimer({
           />
         </svg>
         <div className="rest-ring-center">
-          <div className="rest-ring-time">{mmss(remaining)}</div>
-          <div className="rest-ring-sub">remaining</div>
+          <div className="rest-ring-time">{mmss(elapsed)}</div>
+          <div className="rest-ring-sub">of {mmss(rest.target)} target</div>
         </div>
       </div>
 
@@ -215,8 +225,11 @@ function RestTimer({
         </button>
       </div>
 
-      <button className="btn block primary rest-skip" onClick={onSkip}>
-        Skip rest →
+      <button
+        className={`btn block ${reached ? 'success' : 'primary'} rest-skip`}
+        onClick={onSkip}
+      >
+        {reached ? '✓ Done — next set' : 'Skip rest →'}
       </button>
 
       <button className="btn block rest-minimize" onClick={onMinimize}>
@@ -392,6 +405,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     sets: number;
     volume: number;
     records: WorkoutRecord[];
+    restSeconds: number;
   } | null>(null);
   const [rest, setRest] = useState<Rest | null>(null);
   const [restMin, setRestMin] = useState(false);
@@ -417,12 +431,27 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   };
   // Keep the service worker's scheduled rest notification in sync with the
   // live timer, so it fires even if the phone is locked / the app backgrounded.
-  const restEndsAt = rest?.endsAt ?? null;
+  const restEndsAt = rest ? rest.startedAt + rest.target * 1000 : null;
   useEffect(() => {
     if (restEndsAt && notifyActive)
       postRestToSW({ type: 'schedule-rest', at: restEndsAt });
     else postRestToSW({ type: 'cancel-rest' });
   }, [restEndsAt, notifyActive]);
+
+  // Fold a finished/replaced rest period into the workout's total rest time.
+  const accumulateRest = (r: Rest) => {
+    const sec = Math.round((Date.now() - r.startedAt) / 1000);
+    if (sec > 0)
+      updateActiveWorkout((wk) => ({
+        ...wk,
+        restSeconds: (wk.restSeconds ?? 0) + sec,
+      }));
+  };
+  const endRest = () => {
+    if (rest) accumulateRest(rest);
+    setRest(null);
+    setRestMin(false);
+  };
 
   // computed once for the session — the warm-up is a start-of-workout thing
   const [warmup] = useState(() => buildWarmup(w.exercises, getExercise, unit));
@@ -518,8 +547,9 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         Notification.permission === 'default'
       )
         void Notification.requestPermission();
+      if (rest) accumulateRest(rest); // bank the previous rest before restarting
       setRestMin(false); // a new rest always opens full, then you can minimize
-      setRest({ endsAt: Date.now() + restSeconds * 1000, total: restSeconds });
+      setRest({ startedAt: Date.now(), target: restSeconds });
     }
     updateActiveWorkout((wk) => ({
       ...wk,
@@ -893,7 +923,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           onMinimize={() => setRestMin(true)}
           onExpand={() => setRestMin(false)}
           onChange={setRest}
-          onSkip={() => setRest(null)}
+          onSkip={endRest}
         />
       )}
 
@@ -919,10 +949,17 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 }
                 // finishing: capture records/stats now (before the workout is
                 // saved) and celebrate; the actual save happens on "Done"
+                // fold any in-progress rest into the workout's total
+                if (rest) accumulateRest(rest);
+                setRest(null);
+                const totalRest =
+                  (w.restSeconds ?? 0) +
+                  (rest ? Math.round((Date.now() - rest.startedAt) / 1000) : 0);
                 const summary = {
                   sets: workoutSetCount(w),
                   volume: Math.round(workoutVolume(w)),
                   records: workoutRecords(w, state.workouts),
+                  restSeconds: totalRest,
                 };
                 setConfirm(null);
                 if (summary.sets > 0) setCelebrate(summary);
@@ -961,6 +998,11 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               <div className="label">Records</div>
             </div>
           </div>
+          {celebrate.restSeconds > 0 && (
+            <p className="muted" style={{ marginTop: 0 }}>
+              🛋️ Total rest: {formatRest(celebrate.restSeconds)}
+            </p>
+          )}
           {celebrate.records.length > 0 ? (
             <>
               <p className="muted" style={{ marginBottom: 8 }}>
