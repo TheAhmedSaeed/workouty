@@ -406,6 +406,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     volume: number;
     records: WorkoutRecord[];
     restSeconds: number;
+    totalSeconds: number;
   } | null>(null);
   const [rest, setRest] = useState<Rest | null>(null);
   const [restMin, setRestMin] = useState(false);
@@ -955,11 +956,15 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 const totalRest =
                   (w.restSeconds ?? 0) +
                   (rest ? Math.round((Date.now() - rest.startedAt) / 1000) : 0);
+                const totalSeconds = Math.round(
+                  (Date.now() - new Date(w.startedAt).getTime()) / 1000,
+                );
                 const summary = {
                   sets: workoutSetCount(w),
                   volume: Math.round(workoutVolume(w)),
                   records: workoutRecords(w, state.workouts),
                   restSeconds: totalRest,
+                  totalSeconds,
                 };
                 setConfirm(null);
                 if (summary.sets > 0) setCelebrate(summary);
@@ -998,11 +1003,33 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               <div className="label">Records</div>
             </div>
           </div>
-          {celebrate.restSeconds > 0 && (
-            <p className="muted" style={{ marginTop: 0 }}>
-              🛋️ Total rest: {formatRest(celebrate.restSeconds)}
-            </p>
-          )}
+          <div className="time-breakdown">
+            <div className="row between">
+              <span>⏱ Total time</span>
+              <b>{formatRest(celebrate.totalSeconds)}</b>
+            </div>
+            {celebrate.restSeconds > 0 && (
+              <>
+                <div className="row between">
+                  <span>💪 Working</span>
+                  <b>
+                    {formatRest(
+                      Math.max(0, celebrate.totalSeconds - celebrate.restSeconds),
+                    )}
+                  </b>
+                </div>
+                <div className="row between">
+                  <span>🛋️ Resting</span>
+                  <b>
+                    {formatRest(celebrate.restSeconds)}
+                    {celebrate.totalSeconds > 0
+                      ? ` · ${Math.round((celebrate.restSeconds / celebrate.totalSeconds) * 100)}%`
+                      : ''}
+                  </b>
+                </div>
+              </>
+            )}
+          </div>
           {celebrate.records.length > 0 ? (
             <>
               <p className="muted" style={{ marginBottom: 8 }}>

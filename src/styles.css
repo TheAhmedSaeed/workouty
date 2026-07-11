@@ -542,6 +542,20 @@ input::-webkit-inner-spin-button {
   margin-bottom: 6px;
   font-size: 0.9rem;
 }
+.time-breakdown {
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+.time-breakdown .row.between {
+  padding: 3px 0;
+}
+.time-breakdown b {
+  font-variant-numeric: tabular-nums;
+}
 
 .toggle-row {
   display: flex;

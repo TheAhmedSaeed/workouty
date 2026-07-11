@@ -29,8 +29,9 @@ locally in your browser.
   counts up, so you always see how long you've actually rested. The ring fills
   to your target and the app chimes / vibrates / notifies when you hit it, then
   keeps counting until you tap Done. Add/subtract 15s, minimize it, and set your
-  default target (or turn it off) in Settings. Total rest time is saved per
-  workout and shown in the finish summary and History.
+  default target (or turn it off) in Settings. The finish summary breaks down
+  your **total time**, **working** vs **resting** (with rest as a %), and every
+  workout's duration and rest time are saved and shown in History.
 - **Progressive overload, on your terms** — the app never raises the weight on
   its own. When you finish all the sets of an exercise it simply asks *"add
   weight next time?"*; say yes and it pre-fills one step heavier next session
