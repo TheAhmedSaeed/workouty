@@ -65,6 +65,11 @@ interface StoreApi {
   setSettings: (s: Partial<Settings>) => void;
   // exercises
   addCustomExercise: (ex: Omit<Exercise, 'id' | 'isCustom'>) => Exercise;
+  /** Edit a custom exercise you created (rename, muscles, etc.). */
+  updateCustomExercise: (
+    id: string,
+    patch: Partial<Omit<Exercise, 'id' | 'isCustom'>>,
+  ) => void;
   /** Persistent note shown every time this exercise is trained. */
   exerciseNote: (exerciseId: string) => string;
   setExerciseNote: (exerciseId: string, note: string) => void;
@@ -287,6 +292,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const updateCustomExercise = useCallback(
+    (id: string, patch: Partial<Omit<Exercise, 'id' | 'isCustom'>>) => {
+      setState((st) => ({
+        ...st,
+        customExercises: st.customExercises.map((e) =>
+          e.id === id ? { ...e, ...patch, id: e.id, isCustom: true } : e,
+        ),
+      }));
+    },
+    [],
+  );
+
   const exerciseNote = useCallback(
     (exerciseId: string) => state.exerciseNotes?.[exerciseId] ?? '',
     [state.exerciseNotes],
@@ -469,6 +486,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     allExercises,
     setSettings,
     addCustomExercise,
+    updateCustomExercise,
     exerciseNote,
     setExerciseNote,
     getProgression,

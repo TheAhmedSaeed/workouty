@@ -14,12 +14,14 @@ import { findSimilarExercises } from '../lib/aiPlan';
 import { formatDate } from '../lib/utils';
 
 export function ExercisesPage() {
-  const { state, allExercises, addCustomExercise } = useStore();
+  const { state, allExercises, addCustomExercise, updateCustomExercise } =
+    useStore();
   const unit = state.settings.unit;
   const [q, setQ] = useState('');
   const [muscle, setMuscle] = useState<MuscleGroup | ''>('');
   const [open, setOpen] = useState<Exercise | null>(null);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Exercise | null>(null);
 
   const filtered = useMemo(() => {
     const n = q.toLowerCase().trim();
@@ -82,6 +84,18 @@ export function ExercisesPage() {
 
       {open && (
         <Modal title={open.name} onClose={() => setOpen(null)}>
+          {open.isCustom && (
+            <button
+              className="btn small block"
+              style={{ marginBottom: 12 }}
+              onClick={() => {
+                setEditing(open);
+                setOpen(null);
+              }}
+            >
+              ✏️ Edit exercise
+            </button>
+          )}
           <ExerciseInfo exercise={open} />
           {(() => {
             const pr = personalRecord(state.workouts, open.id);
@@ -113,9 +127,20 @@ export function ExercisesPage() {
       {creating && (
         <CustomExerciseModal
           onClose={() => setCreating(false)}
-          onCreate={(ex) => {
-            addCustomExercise(ex);
+          onSubmit={(vals) => {
+            addCustomExercise({ ...vals, secondaryMuscles: [] });
             setCreating(false);
+          }}
+        />
+      )}
+
+      {editing && (
+        <CustomExerciseModal
+          existing={editing}
+          onClose={() => setEditing(null)}
+          onSubmit={(vals) => {
+            updateCustomExercise(editing.id, vals);
+            setEditing(null);
           }}
         />
       )}
@@ -123,30 +148,52 @@ export function ExercisesPage() {
   );
 }
 
+interface ExerciseForm {
+  name: string;
+  category: ExerciseCategory;
+  primaryMuscles: MuscleGroup[];
+  description: string;
+}
+
 function CustomExerciseModal({
+  existing,
   onClose,
-  onCreate,
+  onSubmit,
 }: {
+  existing?: Exercise;
   onClose: () => void;
-  onCreate: (ex: Omit<Exercise, 'id' | 'isCustom'>) => void;
+  onSubmit: (vals: ExerciseForm) => void;
 }) {
   const { allExercises } = useStore();
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState<ExerciseCategory>('other');
-  const [primary, setPrimary] = useState<MuscleGroup[]>([]);
-  const [description, setDescription] = useState('');
-
-  // live duplicate check against the built-in + custom database
-  const dup = useMemo(
-    () => findSimilarExercises(name, allExercises),
-    [name, allExercises],
+  const [name, setName] = useState(existing?.name ?? '');
+  const [category, setCategory] = useState<ExerciseCategory>(
+    existing?.category ?? 'other',
   );
+  const [primary, setPrimary] = useState<MuscleGroup[]>(
+    existing?.primaryMuscles ?? [],
+  );
+  const [description, setDescription] = useState(
+    existing && existing.description !== 'Custom exercise.'
+      ? existing.description
+      : '',
+  );
+
+  // live duplicate check — exclude the exercise being edited from the pool
+  const dup = useMemo(() => {
+    const pool = existing
+      ? allExercises.filter((e) => e.id !== existing.id)
+      : allExercises;
+    return findSimilarExercises(name, pool);
+  }, [name, allExercises, existing]);
 
   const toggle = (m: MuscleGroup) =>
     setPrimary((p) => (p.includes(m) ? p.filter((x) => x !== m) : [...p, m]));
 
   return (
-    <Modal title="New custom exercise" onClose={onClose}>
+    <Modal
+      title={existing ? 'Edit exercise' : 'New custom exercise'}
+      onClose={onClose}
+    >
       <div className="form-field">
         <label>Name</label>
         <input value={name} onChange={(e) => setName(e.target.value)} autoFocus />
@@ -204,16 +251,15 @@ function CustomExerciseModal({
         disabled={!name.trim() || !!dup.exact}
         style={{ opacity: name.trim() && !dup.exact ? 1 : 0.5 }}
         onClick={() =>
-          onCreate({
+          onSubmit({
             name: name.trim(),
             category,
             primaryMuscles: primary,
-            secondaryMuscles: [],
             description: description.trim() || 'Custom exercise.',
           })
         }
       >
-        Create exercise
+        {existing ? 'Save changes' : 'Create exercise'}
       </button>
     </Modal>
   );

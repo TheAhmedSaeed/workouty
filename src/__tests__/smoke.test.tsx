@@ -202,6 +202,30 @@ describe('custom exercise duplicate check', () => {
     const create = screen.getByRole('button', { name: 'Create exercise' });
     expect((create as HTMLButtonElement).disabled).toBe(false);
   });
+
+  it('lets you rename a custom exercise you created', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('Exercises'));
+    // create a custom exercise
+    fireEvent.click(screen.getByText('＋ Custom'));
+    fireEvent.change(screen.getAllByRole('textbox')[1], {
+      target: { value: 'My Weird Machine' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create exercise' }));
+    expect(screen.getByText('My Weird Machine')).toBeTruthy();
+
+    // open it, edit, rename
+    fireEvent.click(screen.getByText('My Weird Machine'));
+    fireEvent.click(screen.getByText('✏️ Edit exercise'));
+    const nameInput = screen.getAllByRole('textbox')[1];
+    expect((nameInput as HTMLInputElement).value).toBe('My Weird Machine');
+    fireEvent.change(nameInput, { target: { value: 'Renamed Machine' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    // the new name is shown, the old one is gone
+    expect(screen.getByText('Renamed Machine')).toBeTruthy();
+    expect(screen.queryByText('My Weird Machine')).toBeNull();
+  });
 });
 
 describe('app UI', () => {
