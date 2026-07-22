@@ -346,6 +346,31 @@ input::-webkit-inner-spin-button {
 .ex-collapsed-sets {
   color: var(--text-faint);
 }
+
+/* live per-exercise volume vs last time */
+.ex-volume {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+.vol-badge {
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.vol-badge.up {
+  color: var(--green);
+  background: rgba(63, 185, 80, 0.14);
+}
+.vol-badge.down {
+  color: var(--text-dim);
+  background: var(--bg-elev2);
+}
+.ex-collapsed-vol {
+  color: var(--text-faint);
+}
 .ex-collapsed-target {
   color: var(--accent);
   font-weight: 600;

@@ -13,6 +13,10 @@ locally in your browser.
   set and the weight/reps flow down to the remaining sets automatically. Tick
   sets off as you go, add/remove sets and exercises freely. A finished exercise
   auto-collapses to a one-line summary to save space — tap to expand it again.
+- **Live volume vs last time** — as you log, each exercise shows your running
+  total volume (weight × reps) and last time's, with a ▲/▼ badge — so when you
+  bump the weight you can instantly tell if you're doing more total work.
+  Per-exercise volume is also shown in History and the exercise detail.
 - **Swap a busy exercise (for today)** — machine taken or out of order? Hit
   **Replace** on any exercise mid-workout and the app suggests substitutes that
   train the same muscles (best match first), or browse the full list. The swap

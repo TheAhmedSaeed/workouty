@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../state/store';
 import { Modal } from '../components/Modal';
-import { workoutSetCount, workoutVolume } from '../lib/stats';
+import { exerciseVolume, workoutSetCount, workoutVolume } from '../lib/stats';
 import { formatDate, formatDuration, formatRest, formatTime } from '../lib/utils';
 import { Workout } from '../types';
 
@@ -52,8 +52,13 @@ export function HistoryPage() {
           </div>
           {open.exercises.map((we, i) => (
             <div className="card" key={i}>
-              <div style={{ fontWeight: 700, marginBottom: 6 }}>
-                {getExercise(we.exerciseId)?.name ?? 'Unknown exercise'}
+              <div className="row between" style={{ marginBottom: 6 }}>
+                <span style={{ fontWeight: 700 }}>
+                  {getExercise(we.exerciseId)?.name ?? 'Unknown exercise'}
+                </span>
+                <span className="faint">
+                  📊 {exerciseVolume(we.sets).toLocaleString()} {unit}
+                </span>
               </div>
               {we.sets.map((s, j) => (
                 <div className="row between" key={j} style={{ marginBottom: 3 }}>

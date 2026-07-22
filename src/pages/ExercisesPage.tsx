@@ -114,10 +114,21 @@ export function ExercisesPage() {
                 {last && (
                   <p className="muted">
                     Last time ({formatDate(last.date)}):{' '}
-                    {last.sets.map((s) => `${s.weight}×${s.reps}`).join(', ')}
+                    {last.sets.map((s) => `${s.weight}×${s.reps}`).join(', ')} ·{' '}
+                    📊 {last.sets
+                      .reduce((v, s) => v + s.weight * s.reps, 0)
+                      .toLocaleString()}{' '}
+                    {unit} volume
                   </p>
                 )}
-                <p className="faint">Done in {hist.length} workouts.</p>
+                {hist.length > 0 && (
+                  <p className="faint">
+                    Trained {hist.length}{' '}
+                    {hist.length === 1 ? 'time' : 'times'} · best volume{' '}
+                    {Math.max(...hist.map((h) => h.volume)).toLocaleString()}{' '}
+                    {unit} in a session.
+                  </p>
+                )}
               </>
             );
           })()}

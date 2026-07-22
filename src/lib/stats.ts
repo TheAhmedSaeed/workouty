@@ -25,6 +25,15 @@ export function workoutSetCount(w: Workout): number {
   return n;
 }
 
+/** Volume (weight × reps) of the completed working sets in one exercise. */
+export function exerciseVolume(
+  sets: { weight: number; reps: number; completed: boolean; type: string }[],
+): number {
+  let v = 0;
+  for (const s of sets) if (isWorkingSet(s)) v += s.weight * s.reps;
+  return v;
+}
+
 export interface WeekPoint {
   label: string;
   weekKey: number;

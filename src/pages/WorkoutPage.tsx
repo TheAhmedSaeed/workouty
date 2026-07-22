@@ -5,6 +5,7 @@ import { ExerciseInfo } from '../components/ExerciseInfo';
 import { Modal } from '../components/Modal';
 import { NumberInput } from '../components/NumberInput';
 import {
+  exerciseVolume,
   lastPerformance,
   personalRecord,
   workoutSetCount,
@@ -605,6 +606,21 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         // heaviest weight completed this session (for the +weight prompt)
         const topWeight = doneSetsList.reduce((m, s) => Math.max(m, s.weight), 0);
         const inc = incrementFor(ex, prog, unit);
+        // live volume: this session vs last time, so you can tell whether a
+        // heavier weight is actually more total work
+        const curVol = exerciseVolume(we.sets);
+        const lastVol = prev
+          ? prev.sets.reduce((v, s) => v + s.weight * s.reps, 0)
+          : 0;
+        const showLastVol = !hidePrev && lastVol > 0;
+        const volDelta = curVol - lastVol;
+        const volBadge =
+          showLastVol && curVol > 0 ? (
+            <span className={`vol-badge ${volDelta >= 0 ? 'up' : 'down'}`}>
+              {volDelta >= 0 ? '▲' : '▼'} {Math.abs(volDelta).toLocaleString()}{' '}
+              {unit}
+            </span>
+          ) : null;
         // ask "increase next time?" once an exercise is done, unless already
         // answered this session or a target is already queued
         const askIncrease =
@@ -691,6 +707,11 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                     {doneSetsList.map((s) => `${s.weight}×${s.reps}`).join(', ')} {unit}
                   </span>
                 )}
+                {curVol > 0 && (
+                  <span className="ex-collapsed-vol">
+                    {' · '}📊 {curVol.toLocaleString()} {unit} {volBadge}
+                  </span>
+                )}
                 {prog.target && (
                   <span className="ex-collapsed-target">
                     {' · '}🎯 next {prog.target} {unit}
@@ -716,6 +737,29 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                     ? 'First time doing this exercise'
                     : ''}
             </div>
+
+            {(curVol > 0 || showLastVol) && (
+              <div className="ex-volume">
+                📊{' '}
+                {curVol > 0 ? (
+                  <>
+                    <b>
+                      {curVol.toLocaleString()} {unit}
+                    </b>{' '}
+                    volume so far
+                    {showLastVol && (
+                      <>
+                        {' '}· last {lastVol.toLocaleString()} {volBadge}
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    Previous volume: <b>{lastVol.toLocaleString()} {unit}</b>
+                  </>
+                )}
+              </div>
+            )}
 
             {note ? (
               <div
