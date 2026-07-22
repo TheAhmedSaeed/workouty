@@ -25,6 +25,16 @@ export function workoutSetCount(w: Workout): number {
   return n;
 }
 
+/** The most volume ever done in a single workout (0 if none). */
+export function bestWorkoutVolume(workouts: Workout[]): number {
+  let best = 0;
+  for (const w of workouts) {
+    const v = workoutVolume(w);
+    if (v > best) best = v;
+  }
+  return best;
+}
+
 /** Volume (weight × reps) of the completed working sets in one exercise. */
 export function exerciseVolume(
   sets: { weight: number; reps: number; completed: boolean; type: string }[],

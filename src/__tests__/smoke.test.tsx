@@ -348,7 +348,7 @@ describe('app UI', () => {
     expect(screen.getByText(/Add weight to/)).toBeTruthy();
     expect(screen.getByText(/102\.5/)).toBeTruthy(); // 100 + 2.5 default step
     // total volume shown: 3 sets × 100 × 8 = 2,400
-    expect(screen.getByText(/2[,]?400/)).toBeTruthy();
+    expect(screen.getAllByText(/2[,]?400/).length).toBeGreaterThan(0);
 
     // say yes → the bump is queued for next time
     fireEvent.click(screen.getByText(/Yes, \+2\.5/));

@@ -5,6 +5,7 @@ import { ExerciseInfo } from '../components/ExerciseInfo';
 import { Modal } from '../components/Modal';
 import { NumberInput } from '../components/NumberInput';
 import {
+  bestWorkoutVolume,
   exerciseVolume,
   lastPerformance,
   personalRecord,
@@ -408,6 +409,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     records: WorkoutRecord[];
     restSeconds: number;
     totalSeconds: number;
+    volumePR: boolean;
   } | null>(null);
   const [rest, setRest] = useState<Rest | null>(null);
   const [restMin, setRestMin] = useState(false);
@@ -474,6 +476,15 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const doneSets = w.exercises.reduce(
     (n, e) => n + e.sets.filter((s) => s.completed).length,
     0,
+  );
+  // whole-session volume so far, vs your best-ever single workout
+  const sessionVolume = w.exercises.reduce(
+    (v, e) => v + exerciseVolume(e.sets),
+    0,
+  );
+  const bestVolume = useMemo(
+    () => bestWorkoutVolume(state.workouts),
+    [state.workouts],
   );
 
   const setField = (
@@ -584,6 +595,17 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
       </div>
       <div className="faint" style={{ marginBottom: 16 }}>
         {doneSets} sets completed
+        {sessionVolume > 0 && (
+          <>
+            {' · '}📊 {sessionVolume.toLocaleString()} {unit} total
+            {bestVolume > 0 &&
+              (sessionVolume > bestVolume ? (
+                <span className="vol-badge up"> 🔥 lifetime best!</span>
+              ) : (
+                <> · best day {bestVolume.toLocaleString()} {unit}</>
+              ))}
+          </>
+        )}
       </div>
 
       <WarmupPanel steps={warmup} />
@@ -1003,12 +1025,15 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 const totalSeconds = Math.round(
                   (Date.now() - new Date(w.startedAt).getTime()) / 1000,
                 );
+                const vol = Math.round(workoutVolume(w));
                 const summary = {
                   sets: workoutSetCount(w),
-                  volume: Math.round(workoutVolume(w)),
+                  volume: vol,
                   records: workoutRecords(w, state.workouts),
                   restSeconds: totalRest,
                   totalSeconds,
+                  // best-ever volume so far excludes this (not-yet-saved) workout
+                  volumePR: vol > 0 && vol > bestWorkoutVolume(state.workouts),
                 };
                 setConfirm(null);
                 if (summary.sets > 0) setCelebrate(summary);
@@ -1047,6 +1072,12 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               <div className="label">Records</div>
             </div>
           </div>
+          {celebrate.volumePR && (
+            <p className="pr-line" style={{ fontWeight: 700 }}>
+              🔥 Biggest volume day ever — your most total work in a single
+              workout!
+            </p>
+          )}
           <div className="time-breakdown">
             <div className="row between">
               <span>⏱ Total time</span>
