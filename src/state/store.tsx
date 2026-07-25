@@ -19,6 +19,7 @@ import {
 } from '../types';
 import { EXERCISES, EXERCISE_MAP } from '../data/exercises';
 import { lastPerformance } from '../lib/stats';
+import { buildWorkoutsExport } from '../lib/workoutExport';
 import { nextWeight } from '../lib/progression';
 import { uid } from '../lib/utils';
 import {
@@ -91,6 +92,8 @@ interface StoreApi {
   deleteWorkout: (id: string) => void;
   // backup
   exportData: () => string;
+  /** Just your logged workouts, with exercise names + volumes resolved. */
+  exportWorkouts: () => string;
   importData: (json: string) => { ok: boolean; error?: string };
   // cloud sync
   sync: SyncApi;
@@ -467,6 +470,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const exportData = useCallback(() => JSON.stringify(state, null, 2), [state]);
 
+  // Just the workout log, enriched with exercise names + volumes so it's
+  // self-contained and easy to hand to an AI for progress analysis.
+  const exportWorkouts = useCallback(
+    () =>
+      buildWorkoutsExport(
+        state.workouts,
+        state.settings.unit,
+        getExercise,
+        new Date().toISOString(),
+      ),
+    [state.workouts, state.settings.unit, getExercise],
+  );
+
   const importData = useCallback((json: string) => {
     try {
       const parsed = JSON.parse(json);
@@ -500,6 +516,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     discardWorkout,
     deleteWorkout,
     exportData,
+    exportWorkouts,
     importData,
     sync,
   };

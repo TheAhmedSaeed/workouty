@@ -78,7 +78,10 @@ locally in your browser.
      ("give me the exercises in this format"), then paste the JSON back or
      upload it as a file.
   4. **Build manually** — full editor for days, exercises, sets and reps.
-- **Backup** — export/import all your data as a JSON file (Settings tab).
+- **Backup** — export/import all your data as a JSON file (Settings tab). Or
+  **export just your workouts** — a clean file with exercise names and volumes
+  resolved, ready to hand to an AI (“am I progressing?”) or open in a
+  spreadsheet.
 - **Cloud sync (optional)** — sync plans and workout history across devices
   using your own free [Supabase](https://supabase.com) project. Devices merge
   on sync (union by id with tombstoned deletions), so workouts logged on two

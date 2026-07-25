@@ -12,19 +12,25 @@ function restLabel(s: number): string {
 }
 
 export function SettingsPage() {
-  const { state, setSettings, exportData, importData, sync } = useStore();
+  const { state, setSettings, exportData, exportWorkouts, importData, sync } =
+    useStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const download = () => {
-    const blob = new Blob([exportData()], { type: 'application/json' });
+  const downloadFile = (contents: string, name: string) => {
+    const blob = new Blob([contents], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `workouty-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = name;
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const today = () => new Date().toISOString().slice(0, 10);
+  const download = () => downloadFile(exportData(), `workouty-backup-${today()}.json`);
+  const downloadWorkouts = () =>
+    downloadFile(exportWorkouts(), `workouty-workouts-${today()}.json`);
 
   const onFile = async (f: File) => {
     const text = await f.text();
@@ -115,6 +121,18 @@ export function SettingsPage() {
           }}
         />
       </div>
+      <button
+        className="btn block"
+        style={{ marginTop: 8 }}
+        onClick={downloadWorkouts}
+        disabled={state.workouts.length === 0}
+      >
+        📊 Export workouts only ({state.workouts.length})
+      </button>
+      <p className="faint" style={{ marginTop: 6 }}>
+        Just your logged workouts, with exercise names and volumes — hand it to
+        an AI (“am I progressing?”) or open it in a spreadsheet.
+      </p>
       {message && (
         <p className="muted" style={{ marginTop: 10 }}>
           {message}
