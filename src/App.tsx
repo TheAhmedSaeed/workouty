@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { HistoryPage } from './pages/HistoryPage';
 import { ExercisesPage } from './pages/ExercisesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { MeasurePage } from './pages/MeasurePage';
 import { WorkoutPage } from './pages/WorkoutPage';
 
 // Analytics pulls in the heavy charting library — load it only when opened so
@@ -12,12 +13,19 @@ const AnalyticsPage = lazy(() =>
   import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
 );
 
-type Tab = 'home' | 'history' | 'analytics' | 'exercises' | 'settings';
+type Tab =
+  | 'home'
+  | 'history'
+  | 'analytics'
+  | 'measure'
+  | 'exercises'
+  | 'settings';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'home', label: 'Start', icon: '🏋️' },
   { id: 'history', label: 'History', icon: '🗓️' },
   { id: 'analytics', label: 'Analytics', icon: '📈' },
+  { id: 'measure', label: 'Body', icon: '📏' },
   { id: 'exercises', label: 'Exercises', icon: '💪' },
   { id: 'settings', label: 'Settings', icon: '⚙️' },
 ];
@@ -45,6 +53,7 @@ export default function App() {
                 <AnalyticsPage />
               </Suspense>
             )}
+            {tab === 'measure' && <MeasurePage />}
             {tab === 'exercises' && <ExercisesPage />}
             {tab === 'settings' && <SettingsPage />}
           </>
@@ -67,7 +76,7 @@ export default function App() {
               onClick={() => setTab(t.id)}
             >
               <span className="icon">{t.icon}</span>
-              {t.label}
+              <span className="tab-label">{t.label}</span>
             </button>
           ))}
         </nav>

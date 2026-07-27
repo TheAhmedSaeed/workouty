@@ -86,6 +86,11 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
       remote.customExercises ?? [],
       new Set(),
     ),
+    measurements: unionById(
+      local.measurements ?? [],
+      remote.measurements ?? [],
+      new Set(),
+    ),
     // per-exercise notes: union the maps, local wins on a per-exercise conflict
     exerciseNotes: { ...(remote.exerciseNotes ?? {}), ...(local.exerciseNotes ?? {}) },
     // per-exercise progression settings merge the same way

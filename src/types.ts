@@ -128,9 +128,45 @@ export interface Workout {
 }
 
 export type Unit = 'kg' | 'lb';
+/** Unit for tape-measure body measurements. */
+export type LengthUnit = 'cm' | 'in';
+
+/** Numeric body-measurement fields (all optional per entry). */
+export type MeasureKey =
+  | 'weight'
+  | 'bodyFat'
+  | 'neck'
+  | 'shoulders'
+  | 'chest'
+  | 'waist'
+  | 'hips'
+  | 'arm'
+  | 'forearm'
+  | 'thigh'
+  | 'calf';
+
+/** One dated set of body measurements (tape + weight). */
+export interface Measurement {
+  id: string;
+  date: string; // 'YYYY-MM-DD'
+  weight?: number;
+  bodyFat?: number; // %
+  neck?: number;
+  shoulders?: number;
+  chest?: number;
+  waist?: number;
+  hips?: number;
+  arm?: number;
+  forearm?: number;
+  thigh?: number;
+  calf?: number;
+  notes?: string;
+}
 
 export interface Settings {
   unit: Unit;
+  /** Unit for body measurements (cm or inches). */
+  measureUnit?: LengthUnit;
   /**
    * Seconds to rest after completing a set. The workout screen starts a
    * countdown each time you tick a set off. 0 disables the rest timer.
@@ -157,6 +193,8 @@ export interface AppState {
   templates: Template[];
   workouts: Workout[]; // finished workouts, newest last
   activeWorkout: Workout | null;
+  /** Dated body measurements (tape + weight), for tracking body composition. */
+  measurements?: Measurement[];
   /**
    * Persistent per-exercise notes, keyed by exercise id. Unlike a workout's
    * per-set notes these stick to the exercise, so a reminder like "weight

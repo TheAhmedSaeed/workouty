@@ -78,6 +78,11 @@ locally in your browser.
      ("give me the exercises in this format"), then paste the JSON back or
      upload it as a file.
   4. **Build manually** — full editor for days, exercises, sets and reps.
+- **Body measurements** — a **Body** tab to log tape-measure measurements
+  (waist, chest, arms, thighs, weight, body-fat % and more) with how-to tips for
+  each. Log once a week or whenever, back-date entries, and see a change-over-
+  time view with sparklines and deltas — green when you're moving the right way
+  (waist down, muscles up) — so you can track fat loss and muscle gain.
 - **Backup** — export/import all your data as a JSON file (Settings tab). Or
   **export just your workouts** — a clean file with exercise names and volumes
   resolved, ready to hand to an AI (“am I progressing?”) or open in a

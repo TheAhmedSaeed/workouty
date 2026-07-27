@@ -12,6 +12,7 @@ import {
   Exercise,
   ExerciseProgression,
   LoggedSet,
+  Measurement,
   Settings,
   Template,
   TemplateDay,
@@ -41,6 +42,7 @@ function defaultState(): AppState {
     templates: [],
     workouts: [],
     activeWorkout: null,
+    measurements: [],
     exerciseNotes: {},
     progressions: {},
     deleted: { workouts: [], templates: [] },
@@ -90,6 +92,10 @@ interface StoreApi {
   finishWorkout: () => void;
   discardWorkout: () => void;
   deleteWorkout: (id: string) => void;
+  // body measurements
+  addMeasurement: (m: Omit<Measurement, 'id'>) => void;
+  updateMeasurement: (id: string, patch: Partial<Omit<Measurement, 'id'>>) => void;
+  deleteMeasurement: (id: string) => void;
   // backup
   exportData: () => string;
   /** Just your logged workouts, with exercise names + volumes resolved. */
@@ -468,6 +474,33 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const addMeasurement = useCallback((m: Omit<Measurement, 'id'>) => {
+    const full: Measurement = { ...m, id: uid() };
+    setState((st) => ({
+      ...st,
+      measurements: [...(st.measurements ?? []), full],
+    }));
+  }, []);
+
+  const updateMeasurement = useCallback(
+    (id: string, patch: Partial<Omit<Measurement, 'id'>>) => {
+      setState((st) => ({
+        ...st,
+        measurements: (st.measurements ?? []).map((m) =>
+          m.id === id ? { ...m, ...patch, id } : m,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const deleteMeasurement = useCallback((id: string) => {
+    setState((st) => ({
+      ...st,
+      measurements: (st.measurements ?? []).filter((m) => m.id !== id),
+    }));
+  }, []);
+
   const exportData = useCallback(() => JSON.stringify(state, null, 2), [state]);
 
   // Just the workout log, enriched with exercise names + volumes so it's
@@ -515,6 +548,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     finishWorkout,
     discardWorkout,
     deleteWorkout,
+    addMeasurement,
+    updateMeasurement,
+    deleteMeasurement,
     exportData,
     exportWorkouts,
     importData,

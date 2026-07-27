@@ -97,14 +97,21 @@ input::-webkit-inner-spin-button {
 }
 .tabbar button {
   flex: 1;
-  padding: 10px 4px 12px;
+  min-width: 0;
+  padding: 10px 2px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
   color: var(--text-faint);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 600;
+}
+.tab-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .tabbar button .icon {
   font-size: 1.25rem;
@@ -521,6 +528,59 @@ input::-webkit-inner-spin-button {
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 8px 0 10px;
+}
+
+/* ── Body measurements ──────────────────────────────────── */
+.trend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.trend-main {
+  flex: 1;
+  min-width: 0;
+}
+.trend-label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.trend-value {
+  font-weight: 800;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+.sparkline {
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.spark-empty {
+  color: var(--text-faint);
+  width: 84px;
+  text-align: center;
+}
+.trend-deltas {
+  text-align: right;
+  flex: 0 0 auto;
+  min-width: 74px;
+}
+.trend-badge {
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+.trend-badge.good {
+  color: var(--green);
+}
+.trend-badge.bad {
+  color: var(--red);
 }
 
 /* ── Trophies ───────────────────────────────────────────── */

@@ -226,6 +226,24 @@ describe('custom exercise duplicate check', () => {
     expect(screen.getByText('Renamed Machine')).toBeTruthy();
     expect(screen.queryByText('My Weird Machine')).toBeNull();
   });
+
+  it('logs a body measurement and shows it in the trends', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('Body'));
+    expect(screen.getByText(/tape measure/)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '＋ Add' }));
+    const waistLabel = screen.getByText(/^Waist/);
+    const waistInput = waistLabel.parentElement!.querySelector(
+      'input[inputmode]',
+    ) as HTMLInputElement;
+    fireEvent.change(waistInput, { target: { value: '90' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add measurements' }));
+
+    // trend now shows the value
+    expect(screen.getByText(/Change over time/)).toBeTruthy();
+    expect(screen.getAllByText(/90 cm/).length).toBeGreaterThan(0);
+  });
 });
 
 describe('app UI', () => {
