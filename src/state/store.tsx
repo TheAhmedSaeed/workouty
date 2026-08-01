@@ -85,6 +85,17 @@ interface StoreApi {
   // templates
   saveTemplate: (t: Template) => void;
   deleteTemplate: (id: string) => void;
+  /** Reorder a plan up (-1) or down (+1) within its folder group. */
+  moveTemplate: (id: string, dir: -1 | 1) => void;
+  /** Move a plan into a folder (or undefined to ungroup it). */
+  setTemplateFolder: (id: string, folderId?: string) => void;
+  /** Hide/show a plan (hidden plans live in a collapsed "Hidden" section). */
+  setTemplateArchived: (id: string, archived: boolean) => void;
+  // plan folders
+  addFolder: (name: string) => void;
+  renameFolder: (id: string, name: string) => void;
+  deleteFolder: (id: string) => void;
+  moveFolder: (id: string, dir: -1 | 1) => void;
   // workouts
   startWorkout: (template?: Template, day?: TemplateDay) => void;
   startEmptyWorkout: () => void;
@@ -372,6 +383,82 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  // Reorder within the same folder group by swapping with the nearest neighbour
+  // that shares the folder, so display order (which filters by folder) changes.
+  const moveTemplate = useCallback((id: string, dir: -1 | 1) => {
+    setState((st) => {
+      const arr = [...st.templates];
+      const i = arr.findIndex((t) => t.id === id);
+      if (i < 0) return st;
+      const folderId = arr[i].folderId;
+      let j = i + dir;
+      while (j >= 0 && j < arr.length && arr[j].folderId !== folderId) j += dir;
+      if (j < 0 || j >= arr.length) return st;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      return { ...st, templates: arr };
+    });
+  }, []);
+
+  const setTemplateFolder = useCallback((id: string, folderId?: string) => {
+    setState((st) => ({
+      ...st,
+      templates: st.templates.map((t) =>
+        t.id === id ? { ...t, folderId } : t,
+      ),
+    }));
+  }, []);
+
+  const setTemplateArchived = useCallback((id: string, archived: boolean) => {
+    setState((st) => ({
+      ...st,
+      templates: st.templates.map((t) =>
+        t.id === id ? { ...t, archived } : t,
+      ),
+    }));
+  }, []);
+
+  const addFolder = useCallback((name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setState((st) => ({
+      ...st,
+      folders: [...(st.folders ?? []), { id: uid(), name: trimmed }],
+    }));
+  }, []);
+
+  const renameFolder = useCallback((id: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setState((st) => ({
+      ...st,
+      folders: (st.folders ?? []).map((f) =>
+        f.id === id ? { ...f, name: trimmed } : f,
+      ),
+    }));
+  }, []);
+
+  const deleteFolder = useCallback((id: string) => {
+    setState((st) => ({
+      ...st,
+      folders: (st.folders ?? []).filter((f) => f.id !== id),
+      // keep the plans — just move them back to ungrouped
+      templates: st.templates.map((t) =>
+        t.folderId === id ? { ...t, folderId: undefined } : t,
+      ),
+    }));
+  }, []);
+
+  const moveFolder = useCallback((id: string, dir: -1 | 1) => {
+    setState((st) => {
+      const arr = [...(st.folders ?? [])];
+      const i = arr.findIndex((f) => f.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= arr.length) return st;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      return { ...st, folders: arr };
+    });
+  }, []);
+
   const startWorkout = useCallback((template?: Template, day?: TemplateDay) => {
     setState((st) => {
       if (st.activeWorkout) return st; // never clobber an in-progress workout
@@ -542,6 +629,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setProgression,
     saveTemplate,
     deleteTemplate,
+    moveTemplate,
+    setTemplateFolder,
+    setTemplateArchived,
+    addFolder,
+    renameFolder,
+    deleteFolder,
+    moveFolder,
     startWorkout,
     startEmptyWorkout,
     updateActiveWorkout,

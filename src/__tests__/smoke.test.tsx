@@ -244,6 +244,43 @@ describe('custom exercise duplicate check', () => {
     expect(screen.getByText(/Change over time/)).toBeTruthy();
     expect(screen.getAllByText(/90 cm/).length).toBeGreaterThan(0);
   });
+
+  it('organises plans into folders and can hide a plan', () => {
+    renderApp();
+    // build a plan
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('🛠️ Build manually'));
+    fireEvent.change(screen.getByPlaceholderText('e.g. Push Pull Legs'), {
+      target: { value: 'Mini' },
+    });
+    fireEvent.click(screen.getByText('＋ Add exercise'));
+    fireEvent.change(screen.getByPlaceholderText('Search by name or muscle…'), {
+      target: { value: 'Bench Press (Barbell)' },
+    });
+    fireEvent.click(screen.getByText('Bench Press (Barbell)'));
+    fireEvent.click(screen.getByText('Save plan'));
+    expect(screen.getByText('Mini')).toBeTruthy();
+
+    // create a folder
+    fireEvent.click(screen.getByText('📁 New folder'));
+    fireEvent.change(screen.getByPlaceholderText(/Bulking/), {
+      target: { value: 'Bulk' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create folder' }));
+    expect(screen.getByText(/📁 Bulk/)).toBeTruthy();
+
+    // move the plan into the folder via its select
+    const select = screen.getByRole('combobox');
+    const opt = within(select).getByRole('option', {
+      name: 'Bulk',
+    }) as HTMLOptionElement;
+    fireEvent.change(select, { target: { value: opt.value } });
+    expect(screen.getByText('(1)')).toBeTruthy(); // folder now has 1 plan
+
+    // hide the plan → it moves to the Hidden section
+    fireEvent.click(screen.getByText('🙈 Hide'));
+    expect(screen.getByText(/Hidden plans/)).toBeTruthy();
+  });
 });
 
 describe('app UI', () => {

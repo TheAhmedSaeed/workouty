@@ -86,6 +86,14 @@ export interface Template {
   days: TemplateDay[];
   createdAt: string;
   archived?: boolean;
+  /** Folder this plan belongs to (undefined = ungrouped). */
+  folderId?: string;
+}
+
+/** A named folder for grouping plans on the home screen. */
+export interface PlanFolder {
+  id: string;
+  name: string;
 }
 
 export type SetType = 'normal' | 'warmup' | 'failure' | 'drop';
@@ -191,6 +199,8 @@ export interface AppState {
   settings: Settings;
   customExercises: Exercise[];
   templates: Template[];
+  /** Folders for organising plans (order = array order). */
+  folders?: PlanFolder[];
   workouts: Workout[]; // finished workouts, newest last
   activeWorkout: Workout | null;
   /** Dated body measurements (tape + weight), for tracking body composition. */

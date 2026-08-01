@@ -201,6 +201,9 @@ input::-webkit-inner-spin-button {
   align-items: center;
   gap: 8px;
 }
+.row.wrap {
+  flex-wrap: wrap;
+}
 .row.between {
   justify-content: space-between;
 }
@@ -528,6 +531,45 @@ input::-webkit-inner-spin-button {
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 8px 0 10px;
+}
+
+/* ── Plan folders ───────────────────────────────────────── */
+.plans-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 18px 0 10px;
+}
+.folder {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+.folder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.folder-toggle {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.folder-body {
+  margin-top: 8px;
+}
+.folder-body .card {
+  background: var(--bg-elev2);
 }
 
 /* ── Body measurements ──────────────────────────────────── */

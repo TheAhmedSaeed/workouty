@@ -8,6 +8,8 @@ locally in your browser.
 
 - **Plans (templates)** — create programs like *Push Pull Legs* or
   *Upper/Lower*, each with its days and exercises (target sets × rep ranges).
+  Organise them into **folders**, **reorder** them with up/down controls, and
+  **hide** plans you're not using into a collapsed "Hidden" section.
 - **Workout logging** — start a day from a plan and the app shows what you did
   **last time** (weights, reps, sets) and pre-fills your sets. Enter your first
   set and the weight/reps flow down to the remaining sets automatically. Tick

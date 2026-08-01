@@ -81,6 +81,7 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
       (a, b) => a.startedAt.localeCompare(b.startedAt),
     ),
     templates: unionById(local.templates, remote.templates ?? [], delTemplates),
+    folders: unionById(local.folders ?? [], remote.folders ?? [], new Set()),
     customExercises: unionById(
       local.customExercises,
       remote.customExercises ?? [],
