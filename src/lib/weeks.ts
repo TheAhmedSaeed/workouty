@@ -34,6 +34,18 @@ export function weekLabel(weekStart: Date): string {
   return `${MONTHS[wed.getMonth()]} week ${Math.ceil(wed.getDate() / 7)}`;
 }
 
+/**
+ * Absolute Sunday-week number within the year (week 1 = the week containing
+ * Jan 1), based on the month-owning Wednesday so it aligns with the label.
+ */
+export function weekOfYear(weekStart: Date): number {
+  const wed = new Date(weekStart);
+  wed.setDate(wed.getDate() + 3);
+  const jan1 = new Date(wed.getFullYear(), 0, 1);
+  const firstSunday = weekStartSunday(jan1);
+  return Math.round((weekStart.getTime() - firstSunday.getTime()) / (7 * 86400000)) + 1;
+}
+
 function fmtMD(d: Date): string {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
@@ -50,6 +62,8 @@ export function weekRangeLabel(weekStart: Date): string {
 export interface WeekStat {
   /** ISO date (YYYY-MM-DD) of the week's Sunday. */
   start: string;
+  /** Week number within the year (week 1 = the week of Jan 1). */
+  weekNo: number;
   label: string;
   range: string;
   target: number;
@@ -76,6 +90,7 @@ export function weekAdherence(
   }
   return {
     start: weekStart.toISOString().slice(0, 10),
+    weekNo: weekOfYear(weekStart),
     label: weekLabel(weekStart),
     range: weekRangeLabel(weekStart),
     target: plan.days.length,

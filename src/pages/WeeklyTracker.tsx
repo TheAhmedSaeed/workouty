@@ -24,7 +24,9 @@ export function ThisWeekCard({
     <div className={`week-card${hit ? ' hit' : ''}`}>
       <div className="row between">
         <div style={{ minWidth: 0 }}>
-          <div className="week-title">📅 {week.label}</div>
+          <div className="week-title">
+            📅 Week #{week.weekNo} · {week.label}
+          </div>
           <div className="faint">
             {week.range} · {plan.name}
           </div>
@@ -98,7 +100,7 @@ export function WeeklyHistoryModal({
         return (
           <div className={`week-row${hit ? ' hit' : ''}`} key={w.start}>
             <div style={{ minWidth: 0 }}>
-              <b>{w.label}</b>
+              <b>Week #{w.weekNo} · {w.label}</b>
               <div className="faint">{w.range}</div>
             </div>
             <div className="week-row-score">

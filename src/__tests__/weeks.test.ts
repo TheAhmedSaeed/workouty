@@ -3,6 +3,7 @@ import {
   recentWeeks,
   weekAdherence,
   weekLabel,
+  weekOfYear,
   weekRangeLabel,
   weekStartSunday,
 } from '../lib/weeks';
@@ -40,6 +41,13 @@ describe('week boundaries and labels', () => {
   it('formats the date range, spanning months when needed', () => {
     expect(weekRangeLabel(new Date(2026, 7, 2))).toMatch(/Aug 2.*8/);
     expect(weekRangeLabel(new Date(2026, 6, 26))).toMatch(/Jul 26.*Aug 1/);
+  });
+
+  it('numbers weeks within the year, consecutively', () => {
+    const jul = weekOfYear(new Date(2026, 6, 26)); // Jul 26–Aug 1
+    const aug = weekOfYear(new Date(2026, 7, 2)); // Aug 2–8
+    expect(aug).toBe(jul + 1);
+    expect(jul).toBe(31);
   });
 });
 
