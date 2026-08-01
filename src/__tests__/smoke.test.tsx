@@ -281,6 +281,37 @@ describe('custom exercise duplicate check', () => {
     fireEvent.click(screen.getByText('🙈 Hide'));
     expect(screen.getByText(/Hidden plans/)).toBeTruthy();
   });
+
+  it('reorders exercises within a day in the plan editor', () => {
+    renderApp();
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('🛠️ Build manually'));
+    fireEvent.change(screen.getByPlaceholderText('e.g. Push Pull Legs'), {
+      target: { value: 'Order' },
+    });
+    const addExercise = (name: string) => {
+      fireEvent.click(screen.getByText('＋ Add exercise'));
+      fireEvent.change(
+        screen.getByPlaceholderText('Search by name or muscle…'),
+        { target: { value: name } },
+      );
+      fireEvent.click(screen.getByText(name));
+    };
+    addExercise('Bench Press (Barbell)');
+    addExercise('Squat (Barbell)');
+
+    const names = () =>
+      Array.from(document.querySelectorAll('.te-exercise')).map(
+        (el) => el.textContent || '',
+      );
+    expect(names()[0]).toMatch(/Bench Press/);
+    expect(names()[1]).toMatch(/Squat/);
+
+    // move the first exercise down → order swaps
+    fireEvent.click(screen.getAllByTitle('Move down')[0]);
+    expect(names()[0]).toMatch(/Squat/);
+    expect(names()[1]).toMatch(/Bench Press/);
+  });
 });
 
 describe('app UI', () => {

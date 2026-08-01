@@ -32,6 +32,16 @@ export function TemplateEditor({
       days: t.days.map((d) => (d.id === dayId ? fn(d) : d)),
     }));
 
+  // reorder an exercise within its day
+  const moveExercise = (dayId: string, i: number, dir: -1 | 1) =>
+    updateDay(dayId, (d) => {
+      const j = i + dir;
+      if (j < 0 || j >= d.exercises.length) return d;
+      const exercises = [...d.exercises];
+      [exercises[i], exercises[j]] = [exercises[j], exercises[i]];
+      return { ...d, exercises };
+    });
+
   const save = () => {
     if (!draft.name.trim()) return;
     saveTemplate({
@@ -87,10 +97,12 @@ export function TemplateEditor({
           {day.exercises.map((te, i) => {
             const ex = getExercise(te.exerciseId);
             return (
-              <div key={i} className="row" style={{ marginBottom: 8 }}>
-                <div className="grow" style={{ minWidth: 0 }}>
+              <div key={i} className="te-exercise">
+                <div className="row between" style={{ marginBottom: 6 }}>
                   <div
+                    className="grow"
                     style={{
+                      minWidth: 0,
                       fontSize: '0.88rem',
                       fontWeight: 600,
                       overflow: 'hidden',
@@ -100,67 +112,86 @@ export function TemplateEditor({
                   >
                     {ex?.name ?? 'Unknown exercise'}
                   </div>
+                  <div className="row" style={{ gap: 2, flex: '0 0 auto' }}>
+                    <button
+                      className="btn small ghost"
+                      title="Move up"
+                      disabled={i === 0}
+                      onClick={() => moveExercise(day.id, i, -1)}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      className="btn small ghost"
+                      title="Move down"
+                      disabled={i === day.exercises.length - 1}
+                      onClick={() => moveExercise(day.id, i, 1)}
+                    >
+                      ↓
+                    </button>
+                    <button
+                      className="btn small danger ghost"
+                      title="Remove"
+                      onClick={() =>
+                        updateDay(day.id, (d) => ({
+                          ...d,
+                          exercises: d.exercises.filter((_, xi) => xi !== i),
+                        }))
+                      }
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
-                <NumberInput
-                  decimal={false}
-                  style={{ width: 52, textAlign: 'center' }}
-                  value={te.targetSets}
-                  onValue={(n) =>
-                    updateDay(day.id, (d) => ({
-                      ...d,
-                      exercises: d.exercises.map((x, xi) =>
-                        xi === i ? { ...x, targetSets: n || 1 } : x,
-                      ),
-                    }))
-                  }
-                />
-                <span className="faint">×</span>
-                <NumberInput
-                  decimal={false}
-                  style={{ width: 48, textAlign: 'center' }}
-                  value={te.targetRepsMin}
-                  onValue={(n) =>
-                    updateDay(day.id, (d) => ({
-                      ...d,
-                      exercises: d.exercises.map((x, xi) =>
-                        xi === i ? { ...x, targetRepsMin: n || 1 } : x,
-                      ),
-                    }))
-                  }
-                />
-                <span className="faint">–</span>
-                <NumberInput
-                  decimal={false}
-                  style={{ width: 48, textAlign: 'center' }}
-                  value={te.targetRepsMax}
-                  onValue={(n) =>
-                    updateDay(day.id, (d) => ({
-                      ...d,
-                      exercises: d.exercises.map((x, xi) =>
-                        xi === i ? { ...x, targetRepsMax: n || 1 } : x,
-                      ),
-                    }))
-                  }
-                />
-                <button
-                  className="btn small danger ghost"
-                  onClick={() =>
-                    updateDay(day.id, (d) => ({
-                      ...d,
-                      exercises: d.exercises.filter((_, xi) => xi !== i),
-                    }))
-                  }
-                >
-                  ✕
-                </button>
+                <div className="row" style={{ gap: 6 }}>
+                  <NumberInput
+                    decimal={false}
+                    style={{ width: 52, textAlign: 'center' }}
+                    value={te.targetSets}
+                    onValue={(n) =>
+                      updateDay(day.id, (d) => ({
+                        ...d,
+                        exercises: d.exercises.map((x, xi) =>
+                          xi === i ? { ...x, targetSets: n || 1 } : x,
+                        ),
+                      }))
+                    }
+                  />
+                  <span className="faint">×</span>
+                  <NumberInput
+                    decimal={false}
+                    style={{ width: 48, textAlign: 'center' }}
+                    value={te.targetRepsMin}
+                    onValue={(n) =>
+                      updateDay(day.id, (d) => ({
+                        ...d,
+                        exercises: d.exercises.map((x, xi) =>
+                          xi === i ? { ...x, targetRepsMin: n || 1 } : x,
+                        ),
+                      }))
+                    }
+                  />
+                  <span className="faint">–</span>
+                  <NumberInput
+                    decimal={false}
+                    style={{ width: 48, textAlign: 'center' }}
+                    value={te.targetRepsMax}
+                    onValue={(n) =>
+                      updateDay(day.id, (d) => ({
+                        ...d,
+                        exercises: d.exercises.map((x, xi) =>
+                          xi === i ? { ...x, targetRepsMax: n || 1 } : x,
+                        ),
+                      }))
+                    }
+                  />
+                  <span className="faint" style={{ fontSize: '0.75rem' }}>
+                    sets × reps
+                  </span>
+                </div>
               </div>
             );
           })}
-          {day.exercises.length > 0 && (
-            <div className="faint" style={{ marginBottom: 8 }}>
-              sets × rep range
-            </div>
-          )}
 
           <button
             className="btn small block"

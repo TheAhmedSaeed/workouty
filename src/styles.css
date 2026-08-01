@@ -533,6 +533,15 @@ input::-webkit-inner-spin-button {
   margin: 8px 0 10px;
 }
 
+/* ── Plan editor exercise rows ──────────────────────────── */
+.te-exercise {
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+.te-exercise:first-of-type {
+  border-top: none;
+}
+
 /* ── Plan folders ───────────────────────────────────────── */
 .plans-header {
   display: flex;
