@@ -533,6 +533,80 @@ input::-webkit-inner-spin-button {
   margin: 8px 0 10px;
 }
 
+/* ── Weekly adherence tracker ───────────────────────────── */
+.week-card {
+  background: linear-gradient(180deg, var(--accent-soft), var(--bg-elev));
+  border: 1px solid rgba(47, 129, 247, 0.4);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.week-card.hit {
+  background: linear-gradient(180deg, rgba(63, 185, 80, 0.16), var(--bg-elev));
+  border-color: rgba(63, 185, 80, 0.5);
+}
+.week-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.week-score {
+  font-weight: 800;
+  font-size: 1.8rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.week-card.hit .week-score {
+  color: var(--green);
+}
+.week-score-sep {
+  font-size: 0.55em;
+  color: var(--text-dim);
+}
+.week-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.week-day {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+.week-day.done {
+  color: var(--green);
+  border-color: rgba(63, 185, 80, 0.4);
+  background: rgba(63, 185, 80, 0.12);
+}
+.week-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+.week-row.hit {
+  border-color: rgba(63, 185, 80, 0.4);
+  background: rgba(63, 185, 80, 0.08);
+}
+.week-row-score {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+.plan-current {
+  border-color: rgba(47, 129, 247, 0.5);
+}
+
 /* ── Plan editor exercise rows ──────────────────────────── */
 .te-exercise {
   padding: 8px 0;

@@ -61,6 +61,11 @@ locally in your browser.
   plus a one-tap **Watch on YouTube** button for a full video. Demo images
   come from the public-domain
   [free-exercise-db](https://github.com/yuhonas/free-exercise-db).
+- **Weekly adherence** — mark a plan as your **current plan** and the home
+  screen shows this week's progress against it: how many of the plan's workout
+  days you've hit (e.g. *2/4*), which days are done, and the week labelled
+  *"August week 1"* (Sunday→Saturday, numbered within its month). A weekly
+  history shows past weeks, how many you hit the target, and your average.
 - **Muscle coverage analysis** — for any plan, see weekly sets per muscle
   group and instantly spot muscles you're under-training.
 - **Analytics** — volume / sets / workouts per week, per-exercise progress

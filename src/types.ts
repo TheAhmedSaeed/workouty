@@ -187,6 +187,8 @@ export interface Settings {
    * Previous column and pre-filled reps), so past numbers don't anchor you.
    */
   hidePrevious?: boolean;
+  /** The plan you're currently running — drives the weekly adherence tracker. */
+  currentTemplateId?: string;
   /** When settings last changed — newer side wins when devices sync. */
   updatedAt?: string;
 }

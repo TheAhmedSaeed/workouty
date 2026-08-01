@@ -10,11 +10,13 @@ import { GeneratorWizard } from './GeneratorWizard';
 import { AIImportModal } from './AIImportModal';
 import { ImportPlanModal } from './ImportPlanModal';
 import { StretchesModal } from './StretchesModal';
+import { ThisWeekCard, WeeklyHistoryModal } from './WeeklyTracker';
 
 export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const {
     state,
     getExercise,
+    setSettings,
     startWorkout,
     startEmptyWorkout,
     deleteTemplate,
@@ -39,7 +41,10 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
     useState<PlanFolder | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [hiddenOpen, setHiddenOpen] = useState(false);
+  const [weeklyOpen, setWeeklyOpen] = useState(false);
 
+  const currentId = state.settings.currentTemplateId;
+  const currentPlan = state.templates.find((t) => t.id === currentId);
   const folders = state.folders ?? [];
   const folderIds = new Set(folders.map((f) => f.id));
   const visible = state.templates.filter((t) => !t.archived);
@@ -82,6 +87,10 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
       onMove={(dir) => moveTemplate(t.id, dir)}
       onSetFolder={(fid) => setTemplateFolder(t.id, fid)}
       onToggleHide={() => setTemplateArchived(t.id, !t.archived)}
+      isCurrent={t.id === currentId}
+      onToggleCurrent={() =>
+        setSettings({ currentTemplateId: t.id === currentId ? undefined : t.id })
+      }
     />
   );
 
@@ -114,6 +123,14 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
       >
         🧘 Morning stretches
       </button>
+
+      {currentPlan && (
+        <ThisWeekCard
+          plan={currentPlan}
+          workouts={state.workouts}
+          onOpenHistory={() => setWeeklyOpen(true)}
+        />
+      )}
 
       <div className="plans-header">
         <div className="section-title" style={{ margin: 0 }}>
@@ -280,6 +297,13 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
           onClose={() => setEditing(null)}
         />
       )}
+      {weeklyOpen && currentPlan && (
+        <WeeklyHistoryModal
+          plan={currentPlan}
+          workouts={state.workouts}
+          onClose={() => setWeeklyOpen(false)}
+        />
+      )}
       {stretchOpen && <StretchesModal onClose={() => setStretchOpen(false)} />}
       {wizardOpen && <GeneratorWizard onClose={() => setWizardOpen(false)} />}
       {aiOpen && <AIImportModal onClose={() => setAiOpen(false)} />}
@@ -374,6 +398,8 @@ function PlanCard({
   onMove,
   onSetFolder,
   onToggleHide,
+  isCurrent,
+  onToggleCurrent,
 }: {
   t: Template;
   folders: PlanFolder[];
@@ -387,13 +413,18 @@ function PlanCard({
   onMove: (dir: -1 | 1) => void;
   onSetFolder: (folderId?: string) => void;
   onToggleHide: () => void;
+  isCurrent: boolean;
+  onToggleCurrent: () => void;
 }) {
   const archived = !!t.archived;
   return (
-    <div className="card">
+    <div className={`card${isCurrent ? ' plan-current' : ''}`}>
       <div className="row between">
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: 800 }}>{t.name}</div>
+          <div style={{ fontWeight: 800 }}>
+            {t.name}
+            {isCurrent && <span className="chip primary" style={{ marginLeft: 6 }}>current</span>}
+          </div>
           <div className="faint">
             {t.days.length} day{t.days.length === 1 ? '' : 's'} / week
             {t.description ? ` · ${t.description}` : ''}
@@ -439,6 +470,12 @@ function PlanCard({
         );
       })}
       <div className="row wrap" style={{ marginTop: 10 }}>
+        <button
+          className={`btn small${isCurrent ? ' primary' : ''}`}
+          onClick={onToggleCurrent}
+        >
+          {isCurrent ? '⭐ Current' : '☆ Set current'}
+        </button>
         <button className="btn small" onClick={onCoverage}>
           🧬 Coverage
         </button>

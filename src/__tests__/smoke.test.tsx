@@ -312,6 +312,29 @@ describe('custom exercise duplicate check', () => {
     expect(names()[0]).toMatch(/Squat/);
     expect(names()[1]).toMatch(/Bench Press/);
   });
+
+  it('shows a weekly adherence card for the current plan', () => {
+    renderApp();
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('✨ Generate for me'));
+    fireEvent.click(screen.getByText('3 days'));
+    fireEvent.click(screen.getByText('Build muscle'));
+    fireEvent.click(screen.getByText('✨ Generate plan'));
+    fireEvent.click(screen.getByText('✓ Save this plan'));
+
+    // no week card until a plan is marked current
+    expect(screen.queryByText('📈 Weekly history')).toBeNull();
+    fireEvent.click(screen.getByText('☆ Set current'));
+
+    // this-week card appears; a 3-day plan gives a /3 target
+    expect(screen.getByText('/3')).toBeTruthy();
+    expect(screen.getByText('⭐ Current')).toBeTruthy();
+
+    // weekly history modal
+    fireEvent.click(screen.getByText('📈 Weekly history'));
+    expect(screen.getByText('Weekly adherence')).toBeTruthy();
+    expect(screen.getByText('Weeks on target')).toBeTruthy();
+  });
 });
 
 describe('app UI', () => {
