@@ -11,6 +11,7 @@ import { AIImportModal } from './AIImportModal';
 import { ImportPlanModal } from './ImportPlanModal';
 import { StretchesModal } from './StretchesModal';
 import { ThisWeekCard, WeeklyHistoryModal } from './WeeklyTracker';
+import { CurrentPlanFocus } from './CurrentPlan';
 
 export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const {
@@ -42,6 +43,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const [weeklyOpen, setWeeklyOpen] = useState(false);
+  const [allPlansOpen, setAllPlansOpen] = useState(false);
 
   const currentId = state.settings.currentTemplateId;
   const currentPlan = state.templates.find((t) => t.id === currentId);
@@ -124,34 +126,75 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
         🧘 Morning stretches
       </button>
 
-      {currentPlan && (
-        <ThisWeekCard
-          plan={currentPlan}
-          workouts={state.workouts}
-          onOpenHistory={() => setWeeklyOpen(true)}
-        />
-      )}
-
-      <div className="plans-header">
-        <div className="section-title" style={{ margin: 0 }}>
-          My plans
-        </div>
-        {(state.templates.length > 0 || folders.length > 0) && (
-          <button className="btn small" onClick={() => setFolderEdit('new')}>
-            📁 New folder
+      {!allPlansOpen && (
+        <>
+          {currentPlan ? (
+            <>
+              <ThisWeekCard
+                plan={currentPlan}
+                workouts={state.workouts}
+                onOpenHistory={() => setWeeklyOpen(true)}
+              />
+              <CurrentPlanFocus
+                plan={currentPlan}
+                workouts={state.workouts}
+                getExercise={getExercise}
+                onStart={start}
+              />
+            </>
+          ) : (
+            <div className="empty">
+              <span className="big">📋</span>
+              {state.templates.length === 0 ? (
+                <>
+                  No plans yet. Tap <b>＋ New plan</b> to build one, generate one,
+                  or import from any AI.
+                </>
+              ) : (
+                <>
+                  No current plan set. Open <b>All plans</b> and tap{' '}
+                  <b>⭐ Set current</b> to focus your week here.
+                </>
+              )}
+            </div>
+          )}
+          <button
+            className="btn block"
+            style={{ marginTop: 4 }}
+            onClick={() => setAllPlansOpen(true)}
+          >
+            📋 All plans ({state.templates.length})
           </button>
-        )}
-      </div>
-
-      {state.templates.length === 0 && folders.length === 0 && (
-        <div className="empty">
-          <span className="big">📋</span>
-          No plans yet. Tap <b>＋ New plan</b> to build one yourself, generate
-          one from a few questions, or import one from any AI assistant.
-        </div>
+        </>
       )}
 
-      {folders.map((f, fi) => {
+      {allPlansOpen && (
+        <>
+          <div className="plans-header">
+            <button
+              className="btn small ghost"
+              onClick={() => setAllPlansOpen(false)}
+            >
+              ← Home
+            </button>
+            <div className="section-title" style={{ margin: 0 }}>
+              All plans
+            </div>
+            <button className="btn small" onClick={() => setFolderEdit('new')}>
+              📁 New folder
+            </button>
+          </div>
+
+          {state.templates.length === 0 && folders.length === 0 && (
+            <div className="empty">
+              <span className="big">📋</span>
+              No plans yet. Tap <b>＋ New plan</b> to build one yourself,
+              generate one from a few questions, or import one from any AI
+              assistant.
+            </div>
+          )}
+
+          {folders.map((f, fi) => {
         const plans = plansOf(f.id);
         const open = !collapsed[f.id];
         return (
@@ -232,6 +275,8 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
             </div>
           )}
         </div>
+      )}
+        </>
       )}
 
       {newPlanOpen && (

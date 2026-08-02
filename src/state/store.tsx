@@ -368,7 +368,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const templates = [...st.templates];
       if (i >= 0) templates[i] = t;
       else templates.push(t);
-      return { ...st, templates };
+      // if there's no valid current plan yet, focus this one automatically
+      const cur = st.settings.currentTemplateId;
+      const hasCurrent = cur && templates.some((x) => x.id === cur);
+      const settings = hasCurrent
+        ? st.settings
+        : {
+            ...st.settings,
+            currentTemplateId: t.id,
+            updatedAt: new Date().toISOString(),
+          };
+      return { ...st, templates, settings };
     });
   }, []);
 

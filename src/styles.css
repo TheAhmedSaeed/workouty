@@ -637,6 +637,31 @@ input::-webkit-inner-spin-button {
   border-top: none;
 }
 
+/* ── Current-plan focus (home) ──────────────────────────── */
+.plan-day {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.plan-day:first-of-type {
+  border-top: none;
+}
+.ready-line {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: inline-block;
+}
+.ready-line.ok {
+  color: var(--green);
+  background: rgba(63, 185, 80, 0.12);
+}
+.ready-line.wait {
+  color: #e0a92e;
+  background: rgba(210, 153, 34, 0.12);
+}
+
 /* ── Plan folders ───────────────────────────────────────── */
 .plans-header {
   display: flex;

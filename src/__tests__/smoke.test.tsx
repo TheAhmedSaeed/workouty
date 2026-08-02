@@ -271,6 +271,8 @@ describe('custom exercise duplicate check', () => {
     fireEvent.click(screen.getByText('Save plan'));
     expect(screen.getByText('Mini')).toBeTruthy();
 
+    // plan management lives in the "All plans" view now
+    fireEvent.click(screen.getByText(/📋 All plans/));
     // create a folder
     fireEvent.click(screen.getByText('📁 New folder'));
     fireEvent.change(screen.getByPlaceholderText(/Bulking/), {
@@ -332,13 +334,8 @@ describe('custom exercise duplicate check', () => {
     fireEvent.click(screen.getByText('✨ Generate plan'));
     fireEvent.click(screen.getByText('✓ Save this plan'));
 
-    // no week card until a plan is marked current
-    expect(screen.queryByText('📈 Weekly history')).toBeNull();
-    fireEvent.click(screen.getByText('☆ Set current'));
-
-    // this-week card appears; a 3-day plan gives a /3 target
+    // first plan auto-becomes current → this-week card appears (/3 target)
     expect(screen.getByText('/3')).toBeTruthy();
-    expect(screen.getByText('⭐ Current')).toBeTruthy();
 
     // weekly history modal
     fireEvent.click(screen.getByText('📈 Weekly history'));
@@ -509,7 +506,10 @@ describe('app UI', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Import plan' }));
     expect(screen.getByText('Plan imported 🎉')).toBeTruthy();
     fireEvent.click(screen.getByText('Done'));
+    // it becomes the current plan and shows on the home focus view
     expect(screen.getByText('Pasted Plan')).toBeTruthy();
+    expect(screen.getByText('Day 1')).toBeTruthy();
+    fireEvent.click(screen.getByText(/📋 All plans/));
     expect(screen.getByText(/1 day \/ week/)).toBeTruthy();
   });
 
@@ -538,8 +538,8 @@ describe('app UI', () => {
     fireEvent.click(screen.getByText('✓ Finish'));
     fireEvent.click(screen.getByText('✓ Done'));
 
-    // second session: previous performance is shown and pre-filled
-    fireEvent.click(screen.getAllByText('Start')[0]);
+    // second session: the day is done this week, so start it via "Repeat"
+    fireEvent.click(screen.getByText('Repeat'));
     expect(screen.getByText(/Last time \(/)).toBeTruthy();
     expect(screen.getByText('60 kg × 8')).toBeTruthy();
     // hint that last time's set count differed from the plan (1 done vs 3)
@@ -559,9 +559,9 @@ describe('app UI', () => {
       .closest('label')!;
     fireEvent.click(hideRow.querySelector('input')!);
 
-    // back to home (the "Start" tab) and start the day again
+    // back to home (the "Start" tab) and start the day again (done → Repeat)
     fireEvent.click(screen.getAllByText('Start')[0]);
-    fireEvent.click(screen.getAllByText('Start')[0]);
+    fireEvent.click(screen.getByText('Repeat'));
     // the previous reps/weight readout is now hidden, reps are not pre-filled
     expect(screen.queryByText('60 kg × 8')).toBeNull();
     expect(screen.queryByText(/Last time \(/)).toBeNull();
