@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useStore } from '../state/store';
 import { Modal } from '../components/Modal';
 import { ExerciseInfo } from '../components/ExerciseInfo';
+import { ExerciseHistory } from '../components/ExerciseHistory';
 import {
   Exercise,
   ExerciseCategory,
@@ -9,9 +10,7 @@ import {
   MUSCLE_LABELS,
   MuscleGroup,
 } from '../types';
-import { exerciseHistory, lastPerformance, personalRecord } from '../lib/stats';
 import { findSimilarExercises } from '../lib/aiPlan';
-import { formatDate } from '../lib/utils';
 
 export function ExercisesPage() {
   const { state, allExercises, addCustomExercise, updateCustomExercise } =
@@ -97,41 +96,11 @@ export function ExercisesPage() {
             </button>
           )}
           <ExerciseInfo exercise={open} />
-          {(() => {
-            const pr = personalRecord(state.workouts, open.id);
-            const last = lastPerformance(state.workouts, open.id);
-            const hist = exerciseHistory(state.workouts, open.id);
-            if (!pr && !last)
-              return <p className="faint">No logged history yet.</p>;
-            return (
-              <>
-                {pr && (
-                  <p className="muted">
-                    🏆 Best: {pr.weight} {unit} × {pr.reps} (est. 1RM ≈ {pr.est1RM}{' '}
-                    {unit})
-                  </p>
-                )}
-                {last && (
-                  <p className="muted">
-                    Last time ({formatDate(last.date)}):{' '}
-                    {last.sets.map((s) => `${s.weight}×${s.reps}`).join(', ')} ·{' '}
-                    📊 {last.sets
-                      .reduce((v, s) => v + s.weight * s.reps, 0)
-                      .toLocaleString()}{' '}
-                    {unit} volume
-                  </p>
-                )}
-                {hist.length > 0 && (
-                  <p className="faint">
-                    Trained {hist.length}{' '}
-                    {hist.length === 1 ? 'time' : 'times'} · best volume{' '}
-                    {Math.max(...hist.map((h) => h.volume)).toLocaleString()}{' '}
-                    {unit} in a session.
-                  </p>
-                )}
-              </>
-            );
-          })()}
+          <ExerciseHistory
+            workouts={state.workouts}
+            exerciseId={open.id}
+            unit={unit}
+          />
         </Modal>
       )}
 

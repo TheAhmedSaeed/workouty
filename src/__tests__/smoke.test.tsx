@@ -10,6 +10,7 @@ import { EXERCISES, EXERCISE_MAP } from '../data/exercises';
 import { demoFrames, youtubeSearchUrl } from '../data/demos';
 import {
   exerciseHistory,
+  exerciseLog,
   lastPerformance,
   templateMuscleSets,
   weeklySeries,
@@ -154,6 +155,15 @@ describe('stats', () => {
   it('weeklySeries buckets workouts into the current week', () => {
     const series = weeklySeries([w(0, 80)]);
     expect(series[series.length - 1].workouts).toBe(1);
+  });
+
+  it('exerciseLog lists every session newest-first with sets and volume', () => {
+    const log = exerciseLog([w(10, 70), w(2, 80)], 'bench-press');
+    expect(log.length).toBe(2);
+    expect(log[0].sets.map((s) => s.weight)).toEqual([80, 80]); // newest first
+    expect(log[0].sets).toHaveLength(2); // warmup + uncompleted excluded
+    expect(log[0].volume).toBe(80 * 8 + 80 * 6);
+    expect(log[1].sets[0].weight).toBe(70);
   });
 });
 
@@ -530,8 +540,10 @@ describe('app UI', () => {
 
     // second session: previous performance is shown and pre-filled
     fireEvent.click(screen.getAllByText('Start')[0]);
-    expect(screen.getByText(/Last time/)).toBeTruthy();
+    expect(screen.getByText(/Last time \(/)).toBeTruthy();
     expect(screen.getByText('60 kg × 8')).toBeTruthy();
+    // hint that last time's set count differed from the plan (1 done vs 3)
+    expect(screen.getByText(/Last time you did 1 sets \(plan: 3\)/)).toBeTruthy();
     const prefilled = screen.getAllByRole('textbox') as HTMLInputElement[];
     expect(prefilled[0].value).toBe('60');
     expect(prefilled[1].value).toBe('8');

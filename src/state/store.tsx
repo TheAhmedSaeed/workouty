@@ -472,7 +472,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         exercises: (day?.exercises ?? []).map((te) => {
           const prev = lastPerformance(st.workouts, te.exerciseId);
           const prog = st.progressions?.[te.exerciseId];
-          const nSets = Math.max(te.targetSets, 1);
+          // start with as many sets as the plan asks for, but never fewer than
+          // you actually did last time — so extra sets you added aren't lost
+          const nSets = Math.max(te.targetSets, prev?.sets.length ?? 0, 1);
           const sets: LoggedSet[] = Array.from({ length: nSets }, (_, i) => {
             const pw = prev?.sets[Math.min(i, prev.sets.length - 1)]?.weight ?? 0;
             return {

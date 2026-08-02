@@ -533,6 +533,27 @@ input::-webkit-inner-spin-button {
   margin: 8px 0 10px;
 }
 
+.set-hint {
+  background: rgba(210, 153, 34, 0.12);
+  color: #e0a92e;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ── Exercise history list ──────────────────────────────── */
+.ex-history-row {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+.ex-history-sets {
+  color: var(--text-dim);
+  font-size: 0.86rem;
+  margin-top: 2px;
+}
+
 /* ── Weekly adherence tracker ───────────────────────────── */
 .week-card {
   background: linear-gradient(180deg, var(--accent-soft), var(--bg-elev));

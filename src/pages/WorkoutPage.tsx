@@ -2,13 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { ExerciseInfo } from '../components/ExerciseInfo';
+import { ExerciseHistory } from '../components/ExerciseHistory';
 import { Modal } from '../components/Modal';
 import { NumberInput } from '../components/NumberInput';
 import {
   bestWorkoutVolume,
   exerciseVolume,
   lastPerformance,
-  personalRecord,
   workoutSetCount,
   workoutVolume,
 } from '../lib/stats';
@@ -474,16 +474,19 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [warmup] = useState(() => buildWarmup(w.exercises, getExercise, unit));
 
   // template day targets, to show "3 × 8–12" next to each exercise
-  const targets = useMemo(() => {
+  const { targets, targetSets } = useMemo(() => {
     const t = state.templates.find((x) => x.id === w.templateId);
     const d = t?.days.find((x) => x.id === w.dayId);
-    const map = new Map<string, string>();
-    for (const te of d?.exercises ?? [])
-      map.set(
+    const targets = new Map<string, string>();
+    const targetSets = new Map<string, number>();
+    for (const te of d?.exercises ?? []) {
+      targets.set(
         te.exerciseId,
         `${te.targetSets} × ${te.targetRepsMin}–${te.targetRepsMax}`,
       );
-    return map;
+      targetSets.set(te.exerciseId, te.targetSets);
+    }
+    return { targets, targetSets };
   }, [state.templates, w.templateId, w.dayId]);
 
   const doneSets = w.exercises.reduce(
@@ -633,6 +636,13 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         const progHint = prog.target
           ? `🎯 Aim for ${prog.target} ${unit} — hit it to clear this target`
           : null;
+        // hint when last time you did more (or fewer) sets than the plan asks
+        const planSets = targetSets.get(we.exerciseId);
+        const prevCount = prev && !hidePrev ? prev.sets.length : 0;
+        const setHint =
+          planSets != null && prevCount > 0 && prevCount !== planSets
+            ? `💡 Last time you did ${prevCount} sets (plan: ${planSets})`
+            : null;
         // a fully-completed exercise auto-collapses; the user can override
         const allDone = we.sets.length > 0 && we.sets.every((s) => s.completed);
         const key = we.exerciseId;
@@ -772,6 +782,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                     ? 'First time doing this exercise'
                     : ''}
             </div>
+
+            {setHint && <div className="set-hint">{setHint}</div>}
 
             {(curVol > 0 || showLastVol) && (
               <div className="ex-volume">
@@ -981,15 +993,11 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
       {infoExercise && (
         <Modal title={infoExercise.name} onClose={() => setInfoFor(null)}>
           <ExerciseInfo exercise={infoExercise} />
-          {(() => {
-            const pr = personalRecord(state.workouts, infoExercise.id);
-            return pr ? (
-              <p className="muted" style={{ marginTop: 12 }}>
-                🏆 Personal record: {pr.weight} {unit} × {pr.reps} (est. 1RM ≈{' '}
-                {pr.est1RM} {unit})
-              </p>
-            ) : null;
-          })()}
+          <ExerciseHistory
+            workouts={state.workouts}
+            exerciseId={infoExercise.id}
+            unit={unit}
+          />
         </Modal>
       )}
 

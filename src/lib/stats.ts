@@ -132,6 +132,33 @@ export function exerciseHistory(
   return points;
 }
 
+export interface ExerciseSession {
+  date: string; // ISO of workout start
+  sets: { weight: number; reps: number }[];
+  volume: number;
+}
+
+/** Every session you did an exercise, newest first — the full history. */
+export function exerciseLog(
+  workouts: Workout[],
+  exerciseId: string,
+): ExerciseSession[] {
+  const out: ExerciseSession[] = [];
+  for (const w of workouts) {
+    const ex = w.exercises.find((e) => e.exerciseId === exerciseId);
+    if (!ex) continue;
+    const working = ex.sets.filter(isWorkingSet);
+    if (working.length === 0) continue;
+    out.push({
+      date: w.startedAt,
+      sets: working.map((s) => ({ weight: s.weight, reps: s.reps })),
+      volume: working.reduce((v, s) => v + s.weight * s.reps, 0),
+    });
+  }
+  out.sort((a, b) => b.date.localeCompare(a.date));
+  return out;
+}
+
 /**
  * The most recent performance of an exercise — what "last time" looked like.
  * Used to pre-fill sets and show "Previous" hints during a workout.
