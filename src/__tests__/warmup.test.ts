@@ -40,12 +40,16 @@ describe('buildWarmup', () => {
     expect(steps[0].title).toMatch(/cardio/i);
   });
 
-  it('adds mobility drills for the muscles trained', () => {
+  it('adds mobility drills for the muscles trained, each with a how-to video', () => {
     const steps = buildWarmup([{ exerciseId: 'squat', sets: [{ weight: 0 }] }], get, 'kg');
     const mob = steps.find((s) => /mobility/i.test(s.title));
     expect(mob).toBeTruthy();
     // quads is a primary muscle of the squat
-    expect(mob!.detail).toMatch(/squats|lunges/i);
+    const labels = (mob!.videos ?? []).map((v) => v.label).join(' ');
+    expect(labels).toMatch(/squats|lunges/i);
+    // every drill has a YouTube how-to link
+    for (const v of mob!.videos ?? [])
+      expect(v.url).toMatch(/youtube\.com\/results/);
   });
 
   it('gives ramp-up sets scaled to the working weight for a heavy lift', () => {

@@ -271,23 +271,36 @@ function WarmupPanel({ steps }: { steps: WarmupStep[] }) {
       {open && (
         <div className="warmup-body">
           {steps.map((s, i) => (
-            <label className={`warmup-step${done[i] ? ' done' : ''}`} key={i}>
-              <input
-                type="checkbox"
-                checked={done[i]}
-                onChange={() =>
-                  setDone((d) => d.map((v, j) => (j === i ? !v : v)))
-                }
-              />
-              <span className="warmup-step-main">
+            <div className={`warmup-step${done[i] ? ' done' : ''}`} key={i}>
+              <label className="warmup-step-head">
+                <input
+                  type="checkbox"
+                  checked={done[i]}
+                  onChange={() =>
+                    setDone((d) => d.map((v, j) => (j === i ? !v : v)))
+                  }
+                />
                 <span className="warmup-step-title">
                   {s.icon} {s.title}
                 </span>
-                {s.detail && (
-                  <span className="warmup-step-detail">{s.detail}</span>
-                )}
-              </span>
-            </label>
+              </label>
+              {s.detail && <p className="warmup-step-detail">{s.detail}</p>}
+              {s.videos && (
+                <div className="warmup-videos">
+                  {s.videos.map((v, k) => (
+                    <a
+                      key={k}
+                      className="warmup-video"
+                      href={v.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      ▶ {v.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
           <p className="faint warmup-foot">
             Warming up primes your muscles and joints and lowers injury risk.

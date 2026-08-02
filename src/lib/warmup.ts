@@ -8,6 +8,13 @@ export interface WarmupStep {
   icon: string;
   title: string;
   detail?: string;
+  /** Optional per-drill how-to video links (YouTube search). */
+  videos?: { label: string; url: string }[];
+}
+
+/** A YouTube search for how to do a drill — always current, never a dead link. */
+function ytUrl(query: string): string {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 }
 
 /** Quick dynamic drill for each muscle group the session hits. */
@@ -80,7 +87,7 @@ export function buildWarmup(
     steps.push({
       icon: '🤸',
       title: 'Dynamic mobility (1–2 min)',
-      detail: drills.join(' · '),
+      videos: drills.map((d) => ({ label: d, url: ytUrl(`${d} how to`) })),
     });
 
   // 3 — ramp-up sets for the first weighted (non-bodyweight) lift
