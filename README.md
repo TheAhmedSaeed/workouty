@@ -95,9 +95,10 @@ locally in your browser.
   each. Log once a week or whenever, back-date entries, and see a change-over-
   time view with sparklines and deltas — green when you're moving the right way
   (waist down, muscles up) — so you can track fat loss and muscle gain.
-- **Export a plan as an image** — save any plan as a clean **PNG** (🖼 Export /
-  Image) to share or print — rendered on a canvas, no dependencies, works
-  offline.
+- **Export a plan** — as a clean **PNG image** (🖼) to share/print, or as
+  **editable text/Markdown** (📝) you can tweak in any notes app and paste back
+  via Import to recreate or update it (the importer accepts the Markdown or
+  JSON). Both are dependency-free and work offline.
 - **Backup** — export/import all your data as a JSON file (Settings tab). Or
   **export just your workouts** — a clean file with exercise names and volumes
   resolved, ready to hand to an AI (“am I progressing?”) or open in a

@@ -12,6 +12,7 @@ import { ImportPlanModal } from './ImportPlanModal';
 import { StretchesModal } from './StretchesModal';
 import { ThisWeekCard, WeeklyHistoryModal } from './WeeklyTracker';
 import { CurrentPlanFocus } from './CurrentPlan';
+import { PlanTextModal } from './PlanTextModal';
 import { downloadPlanPng } from '../lib/planImage';
 
 export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
@@ -45,6 +46,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const [weeklyOpen, setWeeklyOpen] = useState(false);
   const [allPlansOpen, setAllPlansOpen] = useState(false);
+  const [textPlan, setTextPlan] = useState<Template | null>(null);
 
   const currentId = state.settings.currentTemplateId;
   const currentPlan = state.templates.find((t) => t.id === currentId);
@@ -95,6 +97,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
         setSettings({ currentTemplateId: t.id === currentId ? undefined : t.id })
       }
       onExport={() => downloadPlanPng(t, getExercise)}
+      onExportText={() => setTextPlan(t)}
     />
   );
 
@@ -142,6 +145,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
                 workouts={state.workouts}
                 getExercise={getExercise}
                 onStart={start}
+                onExportText={() => setTextPlan(currentPlan)}
               />
             </>
           ) : (
@@ -351,6 +355,13 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
           onClose={() => setWeeklyOpen(false)}
         />
       )}
+      {textPlan && (
+        <PlanTextModal
+          plan={textPlan}
+          getExercise={getExercise}
+          onClose={() => setTextPlan(null)}
+        />
+      )}
       {stretchOpen && <StretchesModal onClose={() => setStretchOpen(false)} />}
       {wizardOpen && <GeneratorWizard onClose={() => setWizardOpen(false)} />}
       {aiOpen && <AIImportModal onClose={() => setAiOpen(false)} />}
@@ -448,6 +459,7 @@ function PlanCard({
   isCurrent,
   onToggleCurrent,
   onExport,
+  onExportText,
 }: {
   t: Template;
   folders: PlanFolder[];
@@ -464,6 +476,7 @@ function PlanCard({
   isCurrent: boolean;
   onToggleCurrent: () => void;
   onExport: () => void;
+  onExportText: () => void;
 }) {
   const archived = !!t.archived;
   return (
@@ -533,6 +546,9 @@ function PlanCard({
         </button>
         <button className="btn small" onClick={onExport}>
           🖼 Image
+        </button>
+        <button className="btn small" onClick={onExportText}>
+          📝 Text
         </button>
         <button className="btn small ghost" onClick={onToggleHide}>
           {archived ? '👁 Show' : '🙈 Hide'}

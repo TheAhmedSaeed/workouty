@@ -342,6 +342,22 @@ describe('custom exercise duplicate check', () => {
     expect(screen.getByText('Weekly adherence')).toBeTruthy();
     expect(screen.getByText('Weeks on target')).toBeTruthy();
   });
+
+  it('exports the current plan as editable text', () => {
+    renderApp();
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('✨ Generate for me'));
+    fireEvent.click(screen.getByText('3 days'));
+    fireEvent.click(screen.getByText('Build muscle'));
+    fireEvent.click(screen.getByText('✨ Generate plan'));
+    fireEvent.click(screen.getByText('✓ Save this plan'));
+
+    fireEvent.click(screen.getByText('📝 Text'));
+    expect(screen.getByText('Export plan as text')).toBeTruthy();
+    const ta = screen.getByRole('textbox') as HTMLTextAreaElement;
+    expect(ta.value).toContain('## '); // a day heading
+    expect(ta.value).toMatch(/- .+: \d+ x \d+-\d+/); // an exercise line
+  });
 });
 
 describe('app UI', () => {

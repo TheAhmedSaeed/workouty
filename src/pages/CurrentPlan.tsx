@@ -20,11 +20,13 @@ export function CurrentPlanFocus({
   workouts,
   getExercise,
   onStart,
+  onExportText,
 }: {
   plan: Template;
   workouts: Workout[];
   getExercise: (id: string) => Exercise | undefined;
   onStart: (t: Template, d: TemplateDay) => void;
+  onExportText: () => void;
 }) {
   const week = weekAdherence(workouts, plan, weekStartSunday(new Date()));
   const doneThisWeek = new Set(week.doneDayIds);
@@ -44,13 +46,17 @@ export function CurrentPlanFocus({
     <div className="card">
       <div className="row between" style={{ marginBottom: 4 }}>
         <div style={{ fontWeight: 800, minWidth: 0 }}>{plan.name}</div>
-        <button
-          className="btn small ghost"
-          style={{ flex: '0 0 auto' }}
-          onClick={() => downloadPlanPng(plan, getExercise)}
-        >
-          🖼 Export
-        </button>
+        <div className="row" style={{ gap: 4, flex: '0 0 auto' }}>
+          <button className="btn small ghost" onClick={onExportText}>
+            📝 Text
+          </button>
+          <button
+            className="btn small ghost"
+            onClick={() => downloadPlanPng(plan, getExercise)}
+          >
+            🖼 Image
+          </button>
+        </div>
       </div>
       {plan.days.map((d) => {
         const done = doneThisWeek.has(d.id);

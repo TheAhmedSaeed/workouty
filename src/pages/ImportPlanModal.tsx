@@ -6,6 +6,7 @@ import {
   buildFormatInstruction,
   importAIPlan,
 } from '../lib/aiPlan';
+import { parsePlanMarkdown } from '../lib/planText';
 
 /**
  * Direct plan import: paste JSON (from any AI, friend or another app) or
@@ -35,7 +36,17 @@ export function ImportPlanModal({ onClose }: { onClose: () => void }) {
 
   const doImport = (text: string) => {
     setError(null);
-    const res = importAIPlan(text, allExercises, addCustomExercise);
+    let res = importAIPlan(text, allExercises, addCustomExercise);
+    // fall back to the human-readable Markdown format
+    if (!res.ok) {
+      const parsed = parsePlanMarkdown(text);
+      if (parsed)
+        res = importAIPlan(
+          JSON.stringify(parsed),
+          allExercises,
+          addCustomExercise,
+        );
+    }
     if (!res.ok || !res.template) {
       setError(res.error ?? 'Import failed.');
       return;
@@ -65,9 +76,10 @@ export function ImportPlanModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Import a plan" onClose={onClose}>
       <p className="muted">
-        Paste a plan as JSON — from any AI, a friend, or another app. Exercise
-        names are matched to the database automatically; unknown ones are
-        created as custom exercises.
+        Paste a plan as JSON <b>or</b> the text/Markdown you exported (edit it
+        freely first). From any AI, a friend, or another app. Exercise names are
+        matched to the database automatically; unknown ones are created as custom
+        exercises.
       </p>
 
       <div className="form-field">
@@ -124,7 +136,7 @@ export function ImportPlanModal({ onClose }: { onClose: () => void }) {
         <input
           ref={fileRef}
           type="file"
-          accept=".json,.txt,application/json,text/plain"
+          accept=".json,.txt,.md,application/json,text/plain,text/markdown"
           style={{ display: 'none' }}
           onChange={async (e) => {
             const f = e.target.files?.[0];
