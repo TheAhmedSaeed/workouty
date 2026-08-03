@@ -12,6 +12,7 @@ import { ImportPlanModal } from './ImportPlanModal';
 import { StretchesModal } from './StretchesModal';
 import { ThisWeekCard, WeeklyHistoryModal } from './WeeklyTracker';
 import { CurrentPlanFocus } from './CurrentPlan';
+import { downloadPlanPng } from '../lib/planImage';
 
 export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const {
@@ -93,6 +94,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
       onToggleCurrent={() =>
         setSettings({ currentTemplateId: t.id === currentId ? undefined : t.id })
       }
+      onExport={() => downloadPlanPng(t, getExercise)}
     />
   );
 
@@ -445,6 +447,7 @@ function PlanCard({
   onToggleHide,
   isCurrent,
   onToggleCurrent,
+  onExport,
 }: {
   t: Template;
   folders: PlanFolder[];
@@ -460,6 +463,7 @@ function PlanCard({
   onToggleHide: () => void;
   isCurrent: boolean;
   onToggleCurrent: () => void;
+  onExport: () => void;
 }) {
   const archived = !!t.archived;
   return (
@@ -526,6 +530,9 @@ function PlanCard({
         </button>
         <button className="btn small" onClick={onEdit}>
           ✏️ Edit
+        </button>
+        <button className="btn small" onClick={onExport}>
+          🖼 Image
         </button>
         <button className="btn small ghost" onClick={onToggleHide}>
           {archived ? '👁 Show' : '🙈 Hide'}

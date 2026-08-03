@@ -7,6 +7,7 @@ import {
 } from '../types';
 import { weekAdherence, weekStartSunday } from '../lib/weeks';
 import { dayReadiness, muscleLastTrained } from '../lib/readiness';
+import { downloadPlanPng } from '../lib/planImage';
 import { formatDate } from '../lib/utils';
 
 /**
@@ -41,7 +42,16 @@ export function CurrentPlanFocus({
 
   return (
     <div className="card">
-      <div style={{ fontWeight: 800, marginBottom: 4 }}>{plan.name}</div>
+      <div className="row between" style={{ marginBottom: 4 }}>
+        <div style={{ fontWeight: 800, minWidth: 0 }}>{plan.name}</div>
+        <button
+          className="btn small ghost"
+          style={{ flex: '0 0 auto' }}
+          onClick={() => downloadPlanPng(plan, getExercise)}
+        >
+          🖼 Export
+        </button>
+      </div>
       {plan.days.map((d) => {
         const done = doneThisWeek.has(d.id);
         const r = dayReadiness(d, getExercise, lastTrained, now);
