@@ -73,6 +73,9 @@ locally in your browser.
   hit the target, and your average.
 - **Muscle coverage analysis** — for any plan, see weekly sets per muscle
   group and instantly spot muscles you're under-training.
+- **Calendar** — the History tab opens with a month calendar that highlights
+  the days you trained (with a count when you did more than one), month
+  navigation, today marked, and tap a highlighted day to open that workout.
 - **Analytics** — volume / sets / workouts per week, per-exercise progress
   (heaviest set, estimated 1RM, volume over time), personal records, and what
   muscles you actually trained in the last 7/30 days.

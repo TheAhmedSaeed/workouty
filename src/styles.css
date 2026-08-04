@@ -543,6 +543,73 @@ input::-webkit-inner-spin-button {
   font-weight: 600;
 }
 
+/* ── History calendar ───────────────────────────────────── */
+.cal {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.cal-title {
+  font-weight: 800;
+  font-size: 0.98rem;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-dow {
+  margin-bottom: 4px;
+}
+.cal-dow-cell {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+.cal-cell {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--bg-elev2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.cal-cell.out {
+  opacity: 0.35;
+}
+.cal-cell.worked {
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+.cal-cell.today {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.cal-cell.worked.today {
+  outline-color: #fff;
+}
+.cal-count {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
 /* ── Exercise history list ──────────────────────────────── */
 .ex-history-row {
   border-top: 1px solid var(--border);
