@@ -12,6 +12,7 @@ import {
   exerciseHistory,
   exerciseLog,
   lastPerformance,
+  templateMuscleRepsByDay,
   templateMuscleSets,
   weeklySeries,
   workoutVolume,
@@ -65,6 +66,38 @@ describe('plan generator', () => {
     const sets = templateMuscleSets(t, (id) => EXERCISE_MAP.get(id));
     for (const m of ['chest', 'back', 'shoulders', 'quads', 'hamstrings', 'biceps', 'triceps'] as const)
       expect(sets[m]).toBeGreaterThanOrEqual(8);
+  });
+
+  it('templateMuscleRepsByDay spreads reps across the plan days', () => {
+    const t = {
+      id: 't',
+      name: 'PL',
+      createdAt: '',
+      days: [
+        {
+          id: 'p',
+          name: 'Push',
+          exercises: [
+            { exerciseId: 'bench-press', targetSets: 3, targetRepsMin: 8, targetRepsMax: 12 },
+          ],
+        },
+        {
+          id: 'l',
+          name: 'Legs',
+          exercises: [
+            { exerciseId: 'squat', targetSets: 5, targetRepsMin: 5, targetRepsMax: 5 },
+          ],
+        },
+      ],
+    };
+    const b = templateMuscleRepsByDay(t, (id) => EXERCISE_MAP.get(id));
+    expect(b.days).toEqual(['Push', 'Legs']);
+    const chest = b.rows.find((r) => r.muscle === 'chest')!;
+    expect(chest.perDay).toEqual([30, 0]); // 3 sets × mid(8,12)=10 on Push
+    expect(chest.total).toBe(30);
+    const quads = b.rows.find((r) => r.muscle === 'quads')!;
+    expect(quads.perDay).toEqual([0, 25]); // 5 × 5 on Legs
+    expect(b.dayTotals[0]).toBeGreaterThan(0);
   });
 });
 
@@ -357,6 +390,23 @@ describe('custom exercise duplicate check', () => {
     const ta = screen.getByRole('textbox') as HTMLTextAreaElement;
     expect(ta.value).toContain('## '); // a day heading
     expect(ta.value).toMatch(/- .+: \d+ x \d+-\d+/); // an exercise line
+  });
+
+  it('shows reps-per-muscle distributed by day in coverage', () => {
+    renderApp();
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('✨ Generate for me'));
+    fireEvent.click(screen.getByText('3 days'));
+    fireEvent.click(screen.getByText('Build muscle'));
+    fireEvent.click(screen.getByText('✨ Generate plan'));
+    fireEvent.click(screen.getByText('✓ Save this plan'));
+
+    fireEvent.click(screen.getByText(/📋 All plans/));
+    fireEvent.click(screen.getByText('🧬 Coverage'));
+    fireEvent.click(screen.getByText('Reps by day'));
+    expect(screen.getByText(/reps\/week per muscle/)).toBeTruthy();
+    expect(screen.getByText('Muscle')).toBeTruthy(); // table header
+    expect(screen.getByText('Week')).toBeTruthy(); // weekly total column
   });
 });
 

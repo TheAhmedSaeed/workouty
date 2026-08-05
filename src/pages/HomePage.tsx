@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { PlanFolder, Template, TemplateDay } from '../types';
 import { useStore } from '../state/store';
 import { Modal } from '../components/Modal';
-import { MuscleBars } from '../components/MuscleBars';
-import { templateMuscleSets } from '../lib/stats';
+import { CoverageModal } from './CoverageModal';
 import { formatDate } from '../lib/utils';
 import { TemplateEditor } from './TemplateEditor';
 import { GeneratorWizard } from './GeneratorWizard';
@@ -409,12 +408,11 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
       )}
 
       {coverageFor && (
-        <Modal
-          title={`${coverageFor.name} — muscle coverage`}
+        <CoverageModal
+          template={coverageFor}
+          getExercise={getExercise}
           onClose={() => setCoverageFor(null)}
-        >
-          <MuscleBars sets={templateMuscleSets(coverageFor, getExercise)} />
-        </Modal>
+        />
       )}
 
       {confirmDelete && (

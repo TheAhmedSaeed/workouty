@@ -71,8 +71,10 @@ locally in your browser.
   checks the 48h rest window per muscle and tells you if you're ready or which
   muscles are still recovering. A weekly history shows past weeks, how many you
   hit the target, and your average.
-- **Muscle coverage analysis** — for any plan, see weekly sets per muscle
-  group and instantly spot muscles you're under-training.
+- **Muscle coverage analysis** — for any plan, see weekly **sets** per muscle
+  group (bars) or planned weekly **reps per muscle broken down by day** (a
+  matrix) — so you can see each muscle's volume and how it's spread across the
+  week, and instantly spot muscles you're under-training.
 - **Calendar** — the History tab opens with a month calendar that highlights
   the days you trained (with a count when you did more than one), month
   navigation, today marked, and tap a highlighted day to open that workout.

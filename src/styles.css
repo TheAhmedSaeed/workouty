@@ -543,6 +543,56 @@ input::-webkit-inner-spin-button {
   font-weight: 600;
 }
 
+/* ── Reps-by-day coverage table ─────────────────────────── */
+.reps-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.reps-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+.reps-table th,
+.reps-table td {
+  padding: 6px 10px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+.reps-table th {
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.74rem;
+}
+.reps-table .sticky-col {
+  position: sticky;
+  left: 0;
+  text-align: left;
+  background: var(--bg-elev);
+  font-weight: 600;
+}
+.reps-table thead .sticky-col {
+  z-index: 1;
+}
+.reps-table td.zero {
+  color: var(--text-faint);
+}
+.reps-table td.has {
+  color: var(--text);
+}
+.reps-table .total-col {
+  font-weight: 800;
+  color: var(--accent);
+}
+.reps-table .day-total td {
+  border-top: 2px solid var(--border);
+  border-bottom: none;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
 /* ── History calendar ───────────────────────────────────── */
 .cal {
   background: var(--bg-elev);

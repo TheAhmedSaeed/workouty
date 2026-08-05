@@ -2,6 +2,7 @@ import {
   Exercise,
   MuscleGroup,
   MUSCLE_GROUPS,
+  MUSCLE_LABELS,
   Template,
   Workout,
 } from '../types';
@@ -221,6 +222,62 @@ export function templateMuscleSets(
     }
   }
   return sets;
+}
+
+export interface MuscleRepsBreakdown {
+  /** Day names, in plan order. */
+  days: string[];
+  rows: {
+    muscle: MuscleGroup;
+    label: string;
+    perDay: number[]; // reps per day, aligned with `days`
+    total: number; // weekly reps
+  }[];
+  /** Total reps per day across all muscles. */
+  dayTotals: number[];
+}
+
+/**
+ * Planned weekly reps per muscle for a template, broken down by day. Reps for
+ * an exercise = target sets × the mid-point of its rep range; primary muscles
+ * get the full amount, secondaries half.
+ */
+export function templateMuscleRepsByDay(
+  template: Template,
+  getExercise: (id: string) => Exercise | undefined,
+): MuscleRepsBreakdown {
+  const days = template.days.map((d) => d.name);
+  const per = new Map<MuscleGroup, number[]>();
+  const add = (m: MuscleGroup, di: number, reps: number) => {
+    let arr = per.get(m);
+    if (!arr) {
+      arr = new Array(days.length).fill(0);
+      per.set(m, arr);
+    }
+    arr[di] += reps;
+  };
+  template.days.forEach((day, di) => {
+    for (const te of day.exercises) {
+      const ex = getExercise(te.exerciseId);
+      if (!ex) continue;
+      const reps = te.targetSets * ((te.targetRepsMin + te.targetRepsMax) / 2);
+      for (const m of ex.primaryMuscles) add(m, di, reps);
+      for (const m of ex.secondaryMuscles) add(m, di, reps * 0.5);
+    }
+  });
+  const rows = [...per.entries()]
+    .map(([muscle, perDay]) => ({
+      muscle,
+      label: MUSCLE_LABELS[muscle],
+      perDay: perDay.map((r) => Math.round(r)),
+      total: Math.round(perDay.reduce((a, b) => a + b, 0)),
+    }))
+    .filter((r) => r.total > 0)
+    .sort((a, b) => b.total - a.total);
+  const dayTotals = days.map((_, di) =>
+    rows.reduce((s, r) => s + r.perDay[di], 0),
+  );
+  return { days, rows, dayTotals };
 }
 
 /** Same heuristic over actually-logged workouts in a date window. */
