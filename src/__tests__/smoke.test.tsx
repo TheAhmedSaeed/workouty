@@ -403,10 +403,16 @@ describe('custom exercise duplicate check', () => {
 
     fireEvent.click(screen.getByText(/📋 All plans/));
     fireEvent.click(screen.getByText('🧬 Coverage'));
-    fireEvent.click(screen.getByText('Reps by day'));
-    expect(screen.getByText(/reps\/week per muscle/)).toBeTruthy();
+
+    // sets distributed by day
+    fireEvent.click(screen.getByText('Sets × day'));
+    expect(screen.getByText(/sets\/week per muscle/)).toBeTruthy();
     expect(screen.getByText('Muscle')).toBeTruthy(); // table header
     expect(screen.getByText('Week')).toBeTruthy(); // weekly total column
+
+    // reps distributed by day
+    fireEvent.click(screen.getByText('Reps × day'));
+    expect(screen.getByText(/reps\/week per muscle/)).toBeTruthy();
   });
 });
 

@@ -224,45 +224,46 @@ export function templateMuscleSets(
   return sets;
 }
 
-export interface MuscleRepsBreakdown {
+export interface MuscleByDayBreakdown {
   /** Day names, in plan order. */
   days: string[];
   rows: {
     muscle: MuscleGroup;
     label: string;
-    perDay: number[]; // reps per day, aligned with `days`
-    total: number; // weekly reps
+    perDay: number[]; // value per day, aligned with `days`
+    total: number; // weekly total
   }[];
-  /** Total reps per day across all muscles. */
+  /** Total per day across all muscles. */
   dayTotals: number[];
 }
 
 /**
- * Planned weekly reps per muscle for a template, broken down by day. Reps for
- * an exercise = target sets × the mid-point of its rep range; primary muscles
- * get the full amount, secondaries half.
+ * Per-muscle, per-day breakdown of a template using `valueFor` to weight each
+ * exercise (e.g. sets, or reps). Primary muscles get the full value, secondary
+ * muscles half.
  */
-export function templateMuscleRepsByDay(
+function muscleByDay(
   template: Template,
   getExercise: (id: string) => Exercise | undefined,
-): MuscleRepsBreakdown {
+  valueFor: (te: Template['days'][number]['exercises'][number]) => number,
+): MuscleByDayBreakdown {
   const days = template.days.map((d) => d.name);
   const per = new Map<MuscleGroup, number[]>();
-  const add = (m: MuscleGroup, di: number, reps: number) => {
+  const add = (m: MuscleGroup, di: number, v: number) => {
     let arr = per.get(m);
     if (!arr) {
       arr = new Array(days.length).fill(0);
       per.set(m, arr);
     }
-    arr[di] += reps;
+    arr[di] += v;
   };
   template.days.forEach((day, di) => {
     for (const te of day.exercises) {
       const ex = getExercise(te.exerciseId);
       if (!ex) continue;
-      const reps = te.targetSets * ((te.targetRepsMin + te.targetRepsMax) / 2);
-      for (const m of ex.primaryMuscles) add(m, di, reps);
-      for (const m of ex.secondaryMuscles) add(m, di, reps * 0.5);
+      const v = valueFor(te);
+      for (const m of ex.primaryMuscles) add(m, di, v);
+      for (const m of ex.secondaryMuscles) add(m, di, v * 0.5);
     }
   });
   const rows = [...per.entries()]
@@ -278,6 +279,29 @@ export function templateMuscleRepsByDay(
     rows.reduce((s, r) => s + r.perDay[di], 0),
   );
   return { days, rows, dayTotals };
+}
+
+/** Planned weekly sets per muscle, broken down by day (secondary = half). */
+export function templateMuscleSetsByDay(
+  template: Template,
+  getExercise: (id: string) => Exercise | undefined,
+): MuscleByDayBreakdown {
+  return muscleByDay(template, getExercise, (te) => te.targetSets);
+}
+
+/**
+ * Planned weekly reps per muscle, broken down by day. Reps for an exercise =
+ * target sets × the mid-point of its rep range (secondary muscles = half).
+ */
+export function templateMuscleRepsByDay(
+  template: Template,
+  getExercise: (id: string) => Exercise | undefined,
+): MuscleByDayBreakdown {
+  return muscleByDay(
+    template,
+    getExercise,
+    (te) => te.targetSets * ((te.targetRepsMin + te.targetRepsMax) / 2),
+  );
 }
 
 /** Same heuristic over actually-logged workouts in a date window. */
