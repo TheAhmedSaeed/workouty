@@ -81,6 +81,10 @@ input::-webkit-inner-spin-button {
   flex: 1;
   padding: 16px 16px 90px;
 }
+/* extra room so the floating "Resume workout" banner never covers content */
+.app-main.with-banner {
+  padding-bottom: 150px;
+}
 
 .tabbar {
   position: fixed;

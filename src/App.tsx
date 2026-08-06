@@ -37,9 +37,11 @@ export default function App() {
 
   const showWorkout = workoutOpen && state.activeWorkout;
 
+  const bannerShown = !!state.activeWorkout && !showWorkout;
+
   return (
     <>
-      <main className="app-main">
+      <main className={`app-main${bannerShown ? ' with-banner' : ''}`}>
         {showWorkout ? (
           <WorkoutPage onClose={() => setWorkoutOpen(false)} />
         ) : (
