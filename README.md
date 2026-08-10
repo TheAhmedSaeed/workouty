@@ -47,7 +47,8 @@ locally in your browser.
   you're comfortable. You can also set an explicit target weight to chase.
 - **Exercise database** — 50+ built-in exercises, each explaining what it does
   and which muscles it targets (primary and secondary). Add your own custom
-  exercises too.
+  exercises too, and **export the list** (⤓ Export — Markdown or CSV) with the
+  muscles each exercise targets; it respects the current search/muscle filter.
 - **Hide last time (optional)** — a Settings toggle hides what you did last
   time while logging (the "last time" line, the Previous column and pre-filled
   reps) so old numbers don't anchor you into stopping early. Weight is still

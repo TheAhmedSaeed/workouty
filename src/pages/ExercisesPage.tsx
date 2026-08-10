@@ -3,6 +3,7 @@ import { useStore } from '../state/store';
 import { Modal } from '../components/Modal';
 import { ExerciseInfo } from '../components/ExerciseInfo';
 import { ExerciseHistory } from '../components/ExerciseHistory';
+import { ExerciseExportModal } from './ExerciseExportModal';
 import {
   Exercise,
   ExerciseCategory,
@@ -21,6 +22,7 @@ export function ExercisesPage() {
   const [open, setOpen] = useState<Exercise | null>(null);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Exercise | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const n = q.toLowerCase().trim();
@@ -40,9 +42,18 @@ export function ExercisesPage() {
     <div>
       <div className="page-title">
         Exercises
-        <button className="btn small" onClick={() => setCreating(true)}>
-          ＋ Custom
-        </button>
+        <div className="row" style={{ gap: 6 }}>
+          <button
+            className="btn small"
+            disabled={filtered.length === 0}
+            onClick={() => setExportOpen(true)}
+          >
+            ⤓ Export
+          </button>
+          <button className="btn small" onClick={() => setCreating(true)}>
+            ＋ Custom
+          </button>
+        </div>
       </div>
 
       <input
@@ -102,6 +113,13 @@ export function ExercisesPage() {
             unit={unit}
           />
         </Modal>
+      )}
+
+      {exportOpen && (
+        <ExerciseExportModal
+          exercises={filtered}
+          onClose={() => setExportOpen(false)}
+        />
       )}
 
       {creating && (

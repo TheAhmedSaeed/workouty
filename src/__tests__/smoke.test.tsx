@@ -641,4 +641,17 @@ describe('app UI', () => {
     expect(hidden[0].value).toBe('60'); // weight still pre-filled
     expect(hidden[1].value).toBe(''); // reps blanked so they don't anchor
   });
+
+  it('exports the exercise list with target muscles', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('Exercises'));
+    fireEvent.click(screen.getByText('⤓ Export'));
+    expect(screen.getByText(/Export exercises \(/)).toBeTruthy();
+    const ta = (screen.getAllByRole('textbox') as HTMLTextAreaElement[]).find(
+      (a) => a.value.includes('# Workouty exercises'),
+    )!;
+    expect(ta).toBeTruthy();
+    expect(ta.value).toContain('Primary:');
+    expect(ta.value).toMatch(/Bench Press \(Barbell\).*Chest/);
+  });
 });
