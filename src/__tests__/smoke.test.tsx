@@ -270,6 +270,32 @@ describe('custom exercise duplicate check', () => {
     expect(screen.queryByText('My Weird Machine')).toBeNull();
   });
 
+  it('lets you set and keep secondary muscles on a custom exercise', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('Exercises'));
+    fireEvent.click(screen.getByText('＋ Custom'));
+    fireEvent.change(screen.getAllByRole('textbox')[1], {
+      target: { value: 'Zzz Custom Row' },
+    });
+    const secField = screen
+      .getByText('Secondary muscles (tap to toggle)')
+      .closest('.form-field')!;
+    const bicepsBtn = within(secField as HTMLElement).getByText('Biceps');
+    fireEvent.click(bicepsBtn);
+    expect(bicepsBtn.className).toContain('sec'); // selected as secondary
+    fireEvent.click(screen.getByRole('button', { name: 'Create exercise' }));
+
+    // re-open via Edit — the secondary muscle persisted
+    fireEvent.click(screen.getByText('Zzz Custom Row'));
+    fireEvent.click(screen.getByText('✏️ Edit exercise'));
+    const secField2 = screen
+      .getByText('Secondary muscles (tap to toggle)')
+      .closest('.form-field')!;
+    expect(
+      within(secField2 as HTMLElement).getByText('Biceps').className,
+    ).toContain('sec');
+  });
+
   it('logs a body measurement and shows it in the trends', () => {
     renderApp();
     fireEvent.click(screen.getByText('Body'));

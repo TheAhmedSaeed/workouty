@@ -240,6 +240,11 @@ input::-webkit-inner-spin-button {
   border-color: transparent;
   color: var(--accent);
 }
+.chip.sec {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 .empty {
   text-align: center;

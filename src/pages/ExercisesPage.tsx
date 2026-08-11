@@ -126,7 +126,7 @@ export function ExercisesPage() {
         <CustomExerciseModal
           onClose={() => setCreating(false)}
           onSubmit={(vals) => {
-            addCustomExercise({ ...vals, secondaryMuscles: [] });
+            addCustomExercise(vals);
             setCreating(false);
           }}
         />
@@ -150,6 +150,7 @@ interface ExerciseForm {
   name: string;
   category: ExerciseCategory;
   primaryMuscles: MuscleGroup[];
+  secondaryMuscles: MuscleGroup[];
   description: string;
 }
 
@@ -170,6 +171,9 @@ function CustomExerciseModal({
   const [primary, setPrimary] = useState<MuscleGroup[]>(
     existing?.primaryMuscles ?? [],
   );
+  const [secondary, setSecondary] = useState<MuscleGroup[]>(
+    existing?.secondaryMuscles ?? [],
+  );
   const [description, setDescription] = useState(
     existing && existing.description !== 'Custom exercise.'
       ? existing.description
@@ -184,8 +188,15 @@ function CustomExerciseModal({
     return findSimilarExercises(name, pool);
   }, [name, allExercises, existing]);
 
-  const toggle = (m: MuscleGroup) =>
+  // a muscle can be primary OR secondary, not both
+  const togglePrimary = (m: MuscleGroup) => {
     setPrimary((p) => (p.includes(m) ? p.filter((x) => x !== m) : [...p, m]));
+    setSecondary((s) => s.filter((x) => x !== m));
+  };
+  const toggleSecondary = (m: MuscleGroup) => {
+    setSecondary((s) => (s.includes(m) ? s.filter((x) => x !== m) : [...s, m]));
+    setPrimary((p) => p.filter((x) => x !== m));
+  };
 
   return (
     <Modal
@@ -230,12 +241,29 @@ function CustomExerciseModal({
             <button
               key={m}
               className={`chip${primary.includes(m) ? ' primary' : ''}`}
-              onClick={() => toggle(m)}
+              onClick={() => togglePrimary(m)}
             >
               {MUSCLE_LABELS[m]}
             </button>
           ))}
         </div>
+      </div>
+      <div className="form-field">
+        <label>Secondary muscles (tap to toggle)</label>
+        <div>
+          {MUSCLE_GROUPS.map((m) => (
+            <button
+              key={m}
+              className={`chip${secondary.includes(m) ? ' sec' : ''}`}
+              onClick={() => toggleSecondary(m)}
+            >
+              {MUSCLE_LABELS[m]}
+            </button>
+          ))}
+        </div>
+        <p className="faint" style={{ margin: '6px 0 0' }}>
+          Secondary muscles count as half a set in coverage and recovery.
+        </p>
       </div>
       <div className="form-field">
         <label>Notes (optional)</label>
@@ -253,6 +281,7 @@ function CustomExerciseModal({
             name: name.trim(),
             category,
             primaryMuscles: primary,
+            secondaryMuscles: secondary,
             description: description.trim() || 'Custom exercise.',
           })
         }
