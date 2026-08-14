@@ -50,8 +50,7 @@ export function round1(n: number): number {
 /** ISO week start (Monday) for grouping analytics by week. */
 export function weekStart(date: Date): Date {
   const d = new Date(date);
-  const day = (d.getDay() + 6) % 7; // Mon=0
-  d.setDate(d.getDate() - day);
+  d.setDate(d.getDate() - d.getDay()); // getDay(): Sunday = 0 → weeks run Sun–Sat
   d.setHours(0, 0, 0, 0);
   return d;
 }
