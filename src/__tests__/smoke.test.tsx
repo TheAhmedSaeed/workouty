@@ -557,6 +557,10 @@ describe('app UI', () => {
     fireEvent.change(nums()[0], { target: { value: '100' } });
     fireEvent.change(nums()[1], { target: { value: '8' } });
 
+    // projected volume if all 3 sets are completed as entered: 3 × 100 × 8
+    expect(screen.getByText(/if you finish all/)).toBeTruthy();
+    expect(screen.getAllByText(/2[,]?400/).length).toBeGreaterThan(0);
+
     // complete every set → the "increase next time?" prompt appears
     screen.getAllByText('✓').forEach((c) => fireEvent.click(c));
     expect(screen.getByText(/Add weight to/)).toBeTruthy();

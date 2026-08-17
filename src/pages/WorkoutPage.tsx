@@ -666,6 +666,18 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               {unit}
             </span>
           ) : null;
+        // projected total volume if every set here is completed as entered
+        const projVol = we.sets.reduce(
+          (v, s) => (s.type !== 'warmup' ? v + s.weight * s.reps : v),
+          0,
+        );
+        const projDelta = projVol - lastVol;
+        const projBadge = showLastVol ? (
+          <span className={`vol-badge ${projDelta >= 0 ? 'up' : 'down'}`}>
+            {projDelta >= 0 ? '▲' : '▼'} {Math.abs(projDelta).toLocaleString()}{' '}
+            {unit}
+          </span>
+        ) : null;
         // ask "increase next time?" once an exercise is done, unless already
         // answered this session or a target is already queued
         const askIncrease =
@@ -803,6 +815,17 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 ) : (
                   <>
                     Previous volume: <b>{lastVol.toLocaleString()} {unit}</b>
+                  </>
+                )}
+              </div>
+            )}
+
+            {projVol > curVol && (
+              <div className="ex-volume proj">
+                🎯 <b>{projVol.toLocaleString()} {unit}</b> if you finish all
+                {showLastVol && (
+                  <>
+                    {' '}· vs last {lastVol.toLocaleString()} {projBadge}
                   </>
                 )}
               </div>

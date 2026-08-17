@@ -372,6 +372,12 @@ input::-webkit-inner-spin-button {
   color: var(--text-dim);
   margin-bottom: 10px;
 }
+.ex-volume.proj {
+  margin-top: -6px;
+}
+.ex-volume.proj b {
+  color: var(--accent);
+}
 .vol-badge {
   font-weight: 700;
   font-size: 0.78rem;
