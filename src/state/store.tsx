@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import {
   AppState,
+  CardioSession,
   Exercise,
   ExerciseProgression,
   LoggedSet,
@@ -43,6 +44,7 @@ function defaultState(): AppState {
     workouts: [],
     activeWorkout: null,
     measurements: [],
+    cardio: [],
     exerciseNotes: {},
     progressions: {},
     deleted: { workouts: [], templates: [] },
@@ -107,6 +109,10 @@ interface StoreApi {
   addMeasurement: (m: Omit<Measurement, 'id'>) => void;
   updateMeasurement: (id: string, patch: Partial<Omit<Measurement, 'id'>>) => void;
   deleteMeasurement: (id: string) => void;
+  // cardio sessions
+  addCardio: (c: Omit<CardioSession, 'id'>) => void;
+  updateCardio: (id: string, patch: Partial<Omit<CardioSession, 'id'>>) => void;
+  deleteCardio: (id: string) => void;
   // backup
   exportData: () => string;
   /** Just your logged workouts, with exercise names + volumes resolved. */
@@ -600,6 +606,33 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const addCardio = useCallback((c: Omit<CardioSession, 'id'>) => {
+    const full: CardioSession = { ...c, id: uid() };
+    setState((st) => ({
+      ...st,
+      cardio: [...(st.cardio ?? []), full],
+    }));
+  }, []);
+
+  const updateCardio = useCallback(
+    (id: string, patch: Partial<Omit<CardioSession, 'id'>>) => {
+      setState((st) => ({
+        ...st,
+        cardio: (st.cardio ?? []).map((c) =>
+          c.id === id ? { ...c, ...patch, id } : c,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const deleteCardio = useCallback((id: string) => {
+    setState((st) => ({
+      ...st,
+      cardio: (st.cardio ?? []).filter((c) => c.id !== id),
+    }));
+  }, []);
+
   const exportData = useCallback(() => JSON.stringify(state, null, 2), [state]);
 
   // Just the workout log, enriched with exercise names + volumes so it's
@@ -657,6 +690,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addMeasurement,
     updateMeasurement,
     deleteMeasurement,
+    addCardio,
+    updateCardio,
+    deleteCardio,
     exportData,
     exportWorkouts,
     importData,

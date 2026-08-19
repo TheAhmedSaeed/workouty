@@ -9,6 +9,7 @@ import { GeneratorWizard } from './GeneratorWizard';
 import { AIImportModal } from './AIImportModal';
 import { ImportPlanModal } from './ImportPlanModal';
 import { StretchesModal } from './StretchesModal';
+import { CardioModal } from './CardioModal';
 import { ThisWeekCard, WeeklyHistoryModal } from './WeeklyTracker';
 import { CurrentPlanFocus } from './CurrentPlan';
 import { PlanTextModal } from './PlanTextModal';
@@ -38,6 +39,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
   const [coverageFor, setCoverageFor] = useState<Template | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Template | null>(null);
   const [stretchOpen, setStretchOpen] = useState(false);
+  const [cardioOpen, setCardioOpen] = useState(false);
   const [folderEdit, setFolderEdit] = useState<'new' | PlanFolder | null>(null);
   const [confirmDeleteFolder, setConfirmDeleteFolder] =
     useState<PlanFolder | null>(null);
@@ -122,13 +124,17 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
         {state.activeWorkout ? '▶ Resume workout' : '🚀 Start empty workout'}
       </button>
 
-      <button
-        className="btn block"
-        style={{ marginTop: 10 }}
-        onClick={() => setStretchOpen(true)}
-      >
-        🧘 Morning stretches
-      </button>
+      <div className="row" style={{ marginTop: 10, gap: 10 }}>
+        <button
+          className="btn grow"
+          onClick={() => setStretchOpen(true)}
+        >
+          🧘 Morning stretches
+        </button>
+        <button className="btn grow" onClick={() => setCardioOpen(true)}>
+          🏃 Cardio
+        </button>
+      </div>
 
       {!allPlansOpen && (
         <>
@@ -362,6 +368,7 @@ export function HomePage({ onOpenWorkout }: { onOpenWorkout: () => void }) {
         />
       )}
       {stretchOpen && <StretchesModal onClose={() => setStretchOpen(false)} />}
+      {cardioOpen && <CardioModal onClose={() => setCardioOpen(false)} />}
       {wizardOpen && <GeneratorWizard onClose={() => setWizardOpen(false)} />}
       {aiOpen && <AIImportModal onClose={() => setAiOpen(false)} />}
       {importOpen && <ImportPlanModal onClose={() => setImportOpen(false)} />}

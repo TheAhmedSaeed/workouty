@@ -171,6 +171,31 @@ export interface Measurement {
   notes?: string;
 }
 
+/** The kind of cardio done in a session. */
+export type CardioType =
+  | 'run'
+  | 'walk'
+  | 'cycle'
+  | 'row'
+  | 'elliptical'
+  | 'swim'
+  | 'hike'
+  | 'jump_rope'
+  | 'stairmaster'
+  | 'other';
+
+/** One logged cardio session on a given day. */
+export interface CardioSession {
+  id: string;
+  date: string; // 'YYYY-MM-DD'
+  type: CardioType;
+  /** Duration in minutes. */
+  minutes: number;
+  /** Optional distance covered, in kilometres. */
+  distanceKm?: number;
+  notes?: string;
+}
+
 export interface Settings {
   unit: Unit;
   /** Unit for body measurements (cm or inches). */
@@ -207,6 +232,8 @@ export interface AppState {
   activeWorkout: Workout | null;
   /** Dated body measurements (tape + weight), for tracking body composition. */
   measurements?: Measurement[];
+  /** Logged cardio sessions (running, cycling, …) for week-by-week tracking. */
+  cardio?: CardioSession[];
   /**
    * Persistent per-exercise notes, keyed by exercise id. Unlike a workout's
    * per-set notes these stick to the exercise, so a reminder like "weight

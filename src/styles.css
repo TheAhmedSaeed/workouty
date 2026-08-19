@@ -1421,3 +1421,62 @@ a.btn {
 a {
   color: var(--accent);
 }
+
+/* ── Cardio ─────────────────────────────────────────────── */
+.cardio-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+.cardio-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.cardio-type.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.cardio-type-icon {
+  font-size: 1.1rem;
+}
+.cardio-form {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.cardio-week {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.cardio-bar-track {
+  margin-top: 6px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-elev2);
+  overflow: hidden;
+}
+.cardio-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+.cardio-bar-fill.empty {
+  background: transparent;
+}
