@@ -68,6 +68,26 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     return [...map.values()].filter((x) => !deleted.has(x.id));
   };
 
+  // Like unionById, but for records edited in place under a stable id: the copy
+  // with the newer `updatedAt` wins so an edit on one device isn't clobbered by
+  // another device's older copy. Ties / missing timestamps keep the local copy.
+  const unionByNewest = <T extends { id: string; updatedAt?: string }>(
+    a: T[],
+    b: T[],
+    deleted: Set<string>,
+  ): T[] => {
+    const map = new Map<string, T>();
+    for (const x of b ?? []) map.set(x.id, x);
+    for (const x of a ?? []) {
+      const other = map.get(x.id);
+      map.set(
+        x.id,
+        !other || (x.updatedAt ?? '') >= (other.updatedAt ?? '') ? x : other,
+      );
+    }
+    return [...map.values()].filter((x) => !deleted.has(x.id));
+  };
+
   // settings follow whichever device changed them most recently
   const settings =
     (remote.settings?.updatedAt ?? '') > (local.settings?.updatedAt ?? '')
@@ -80,7 +100,11 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     workouts: unionById(local.workouts, remote.workouts ?? [], delWorkouts).sort(
       (a, b) => a.startedAt.localeCompare(b.startedAt),
     ),
-    templates: unionById(local.templates, remote.templates ?? [], delTemplates),
+    templates: unionByNewest(
+      local.templates,
+      remote.templates ?? [],
+      delTemplates,
+    ),
     folders: unionById(local.folders ?? [], remote.folders ?? [], new Set()),
     customExercises: unionById(
       local.customExercises,

@@ -34,18 +34,66 @@ describe('sync merge', () => {
     expect(merged.workouts.map((w) => w.id)).toEqual(['b', 'a']);
   });
 
-  it('local version wins when the same id exists on both sides', () => {
+  it('keeps the local plan when neither copy has an edit timestamp', () => {
     const local = base({
       templates: [
-        { id: 't1', name: 'Edited locally', days: [], createdAt: '2026-01-01' },
+        { id: 't1', name: 'Local copy', days: [], createdAt: '2026-01-01' },
       ],
     });
     const remote = base({
       templates: [
-        { id: 't1', name: 'Old remote name', days: [], createdAt: '2026-01-01' },
+        { id: 't1', name: 'Remote copy', days: [], createdAt: '2026-01-01' },
       ],
     });
-    expect(mergeStates(local, remote).templates[0].name).toBe('Edited locally');
+    expect(mergeStates(local, remote).templates[0].name).toBe('Local copy');
+  });
+
+  it('a plan edited on the other device propagates (newest updatedAt wins)', () => {
+    // laptop edited the schedule most recently; phone has an older copy
+    const laptop = {
+      id: 't1',
+      name: 'New schedule',
+      days: [],
+      createdAt: '2026-01-01',
+      updatedAt: '2026-08-21T10:00:00Z',
+    };
+    const phoneOld = {
+      id: 't1',
+      name: 'Old schedule',
+      days: [],
+      createdAt: '2026-01-01',
+      updatedAt: '2026-08-01T09:00:00Z',
+    };
+    // phone pulls the laptop's copy → it must adopt the newer schedule
+    expect(
+      mergeStates(base({ templates: [phoneOld] }), base({ templates: [laptop] }))
+        .templates[0].name,
+    ).toBe('New schedule');
+    // and it wins regardless of which side is "local"
+    expect(
+      mergeStates(base({ templates: [laptop] }), base({ templates: [phoneOld] }))
+        .templates[0].name,
+    ).toBe('New schedule');
+  });
+
+  it('an edited plan (with timestamp) beats an untouched copy (no timestamp)', () => {
+    const edited = {
+      id: 't1',
+      name: 'Edited',
+      days: [],
+      createdAt: '2026-01-01',
+      updatedAt: '2026-08-21T10:00:00Z',
+    };
+    const untouched = {
+      id: 't1',
+      name: 'Untouched',
+      days: [],
+      createdAt: '2026-01-01',
+    };
+    expect(
+      mergeStates(base({ templates: [untouched] }), base({ templates: [edited] }))
+        .templates[0].name,
+    ).toBe('Edited');
   });
 
   it('deletions propagate via tombstones instead of resurrecting', () => {

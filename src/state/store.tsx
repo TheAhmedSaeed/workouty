@@ -370,10 +370,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const saveTemplate = useCallback((t: Template) => {
     setState((st) => {
-      const i = st.templates.findIndex((x) => x.id === t.id);
+      const stamped: Template = { ...t, updatedAt: new Date().toISOString() };
+      const i = st.templates.findIndex((x) => x.id === stamped.id);
       const templates = [...st.templates];
-      if (i >= 0) templates[i] = t;
-      else templates.push(t);
+      if (i >= 0) templates[i] = stamped;
+      else templates.push(stamped);
       // if there's no valid current plan yet, focus this one automatically
       const cur = st.settings.currentTemplateId;
       const hasCurrent = cur && templates.some((x) => x.id === cur);
@@ -419,7 +420,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setState((st) => ({
       ...st,
       templates: st.templates.map((t) =>
-        t.id === id ? { ...t, folderId } : t,
+        t.id === id
+          ? { ...t, folderId, updatedAt: new Date().toISOString() }
+          : t,
       ),
     }));
   }, []);
@@ -428,7 +431,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setState((st) => ({
       ...st,
       templates: st.templates.map((t) =>
-        t.id === id ? { ...t, archived } : t,
+        t.id === id
+          ? { ...t, archived, updatedAt: new Date().toISOString() }
+          : t,
       ),
     }));
   }, []);

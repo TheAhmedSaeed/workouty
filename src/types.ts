@@ -85,6 +85,12 @@ export interface Template {
   description?: string;
   days: TemplateDay[];
   createdAt: string;
+  /**
+   * When the plan was last edited. Drives newest-wins conflict resolution when
+   * two devices sync — without it, an edit made on one device would be silently
+   * overwritten by another device's older copy (same id).
+   */
+  updatedAt?: string;
   archived?: boolean;
   /** Folder this plan belongs to (undefined = ungrouped). */
   folderId?: string;
