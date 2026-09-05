@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../state/store';
 import { Modal } from '../components/Modal';
+import { MeasureTextModal } from './MeasureTextModal';
 import { NumberInput } from '../components/NumberInput';
 import { LengthUnit, Measurement, MeasureKey, Unit } from '../types';
 import {
@@ -58,6 +59,7 @@ export function MeasurePage() {
   const lenUnit: LengthUnit = state.settings.measureUnit ?? 'cm';
   const measurements = state.measurements ?? [];
   const [editing, setEditing] = useState<Measurement | 'new' | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const byNewest = [...measurements].sort((a, b) => b.date.localeCompare(a.date));
 
@@ -74,9 +76,19 @@ export function MeasurePage() {
     <div>
       <div className="page-title">
         Measurements
-        <button className="btn small primary" onClick={() => setEditing('new')}>
-          ＋ Add
-        </button>
+        <div className="row" style={{ gap: 6 }}>
+          {measurements.length > 0 && (
+            <button className="btn small" onClick={() => setExportOpen(true)}>
+              📤 Export
+            </button>
+          )}
+          <button
+            className="btn small primary"
+            onClick={() => setEditing('new')}
+          >
+            ＋ Add
+          </button>
+        </div>
       </div>
 
       {measurements.length === 0 ? (
@@ -145,6 +157,15 @@ export function MeasurePage() {
             </div>
           ))}
         </>
+      )}
+
+      {exportOpen && (
+        <MeasureTextModal
+          measurements={measurements}
+          unit={unit}
+          lenUnit={lenUnit}
+          onClose={() => setExportOpen(false)}
+        />
       )}
 
       {editing && (
