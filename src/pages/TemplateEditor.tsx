@@ -25,6 +25,11 @@ export function TemplateEditor({
       },
   );
   const [pickingForDay, setPickingForDay] = useState<string | null>(null);
+  // when set, the picker replaces this exercise in place (keeping sets/reps)
+  const [replacing, setReplacing] = useState<{
+    dayId: string;
+    index: number;
+  } | null>(null);
 
   const updateDay = (dayId: string, fn: (d: TemplateDay) => TemplateDay) =>
     setDraft((t) => ({
@@ -130,6 +135,13 @@ export function TemplateEditor({
                       ↓
                     </button>
                     <button
+                      className="btn small ghost"
+                      title="Replace exercise"
+                      onClick={() => setReplacing({ dayId: day.id, index: i })}
+                    >
+                      🔁
+                    </button>
+                    <button
                       className="btn small danger ghost"
                       title="Remove"
                       onClick={() =>
@@ -226,6 +238,23 @@ export function TemplateEditor({
       >
         Save plan
       </button>
+
+      {replacing && (
+        <ExercisePicker
+          title="Replace exercise"
+          onClose={() => setReplacing(null)}
+          onPick={(ex) => {
+            // swap the exercise in place, keeping its sets, rep range and notes
+            updateDay(replacing.dayId, (d) => ({
+              ...d,
+              exercises: d.exercises.map((x, xi) =>
+                xi === replacing.index ? { ...x, exerciseId: ex.id } : x,
+              ),
+            }));
+            setReplacing(null);
+          }}
+        />
+      )}
 
       {pickingForDay && (
         <ExercisePicker

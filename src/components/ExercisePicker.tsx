@@ -7,9 +7,11 @@ import { Modal } from './Modal';
 export function ExercisePicker({
   onPick,
   onClose,
+  title = 'Add exercise',
 }: {
   onPick: (ex: Exercise) => void;
   onClose: () => void;
+  title?: string;
 }) {
   const { allExercises } = useStore();
   const [q, setQ] = useState('');
@@ -25,7 +27,7 @@ export function ExercisePicker({
   }, [q, allExercises]);
 
   return (
-    <Modal title="Add exercise" onClose={onClose}>
+    <Modal title={title} onClose={onClose}>
       <input
         className="search-input"
         placeholder="Search by name or muscle…"
