@@ -571,7 +571,7 @@ describe('app UI', () => {
     expect(names()[1]).toContain('Bench Press');
   });
 
-  it('asks whether to increase weight after all sets, bumping only on yes', () => {
+  it('shows volume but no "add weight next time?" prompt after finishing sets', () => {
     renderApp();
     fireEvent.click(screen.getByText('🚀 Start empty workout'));
     fireEvent.click(screen.getByText('＋ Add exercise'));
@@ -589,16 +589,11 @@ describe('app UI', () => {
     expect(screen.getByText(/if you finish all/)).toBeTruthy();
     expect(screen.getAllByText(/2[,]?400/).length).toBeGreaterThan(0);
 
-    // complete every set → the "increase next time?" prompt appears
+    // complete every set → total volume shown, but no auto "increase?" prompt
     screen.getAllByText('✓').forEach((c) => fireEvent.click(c));
-    expect(screen.getByText(/Add weight to/)).toBeTruthy();
-    expect(screen.getByText(/102\.5/)).toBeTruthy(); // 100 + 2.5 default step
-    // total volume shown: 3 sets × 100 × 8 = 2,400
     expect(screen.getAllByText(/2[,]?400/).length).toBeGreaterThan(0);
-
-    // say yes → the bump is queued for next time
-    fireEvent.click(screen.getByText(/Yes, \+2\.5/));
-    expect(screen.getByText(/next 102\.5/)).toBeTruthy();
+    expect(screen.queryByText(/Add weight to/)).toBeNull();
+    expect(screen.queryByText(/Yes, \+/)).toBeNull();
   });
 
   it('accepts Arabic-Indic numerals and converts them to Western digits', () => {

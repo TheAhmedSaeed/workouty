@@ -12,7 +12,7 @@ import {
   workoutSetCount,
   workoutVolume,
 } from '../lib/stats';
-import { incrementFor, nextWeight } from '../lib/progression';
+import { nextWeight } from '../lib/progression';
 import { buildWarmup, WarmupStep } from '../lib/warmup';
 import { similarExercises } from '../lib/similar';
 import { workoutRecords, WorkoutRecord } from '../lib/trophies';
@@ -402,7 +402,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     getExercise,
     exerciseNote,
     getProgression,
-    setProgression,
     setSettings,
     updateActiveWorkout,
     finishWorkout,
@@ -429,8 +428,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   // per-exercise expand override (by exercise id); undefined = auto (a finished
   // exercise auto-collapses to save space, but you can expand it back)
   const [expandOverride, setExpandOverride] = useState<Record<string, boolean>>({});
-  // exercises we've already asked "increase next time?" this session
-  const [askedIncrease, setAskedIncrease] = useState<Record<string, boolean>>({});
   const restSeconds = state.settings.restTimerSeconds ?? DEFAULT_REST_SECONDS;
   const restNotify = !!state.settings.restNotify;
   const notifySupported = typeof Notification !== 'undefined';
@@ -658,9 +655,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         const key = we.exerciseId;
         const expanded = expandOverride[key] ?? !allDone;
         const doneSetsList = we.sets.filter((s) => s.completed);
-        // heaviest weight completed this session (for the +weight prompt)
-        const topWeight = doneSetsList.reduce((m, s) => Math.max(m, s.weight), 0);
-        const inc = incrementFor(ex, prog, unit);
         // live volume: this session vs last time, so you can tell whether a
         // heavier weight is actually more total work
         const curVol = exerciseVolume(we.sets);
@@ -688,14 +682,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
             {unit}
           </span>
         ) : null;
-        // ask "increase next time?" once an exercise is done, unless already
-        // answered this session or a target is already queued
-        const askIncrease =
-          allDone && topWeight > 0 && !askedIncrease[key] && !prog.target;
-        const answerIncrease = (yes: boolean) => {
-          setAskedIncrease((a) => ({ ...a, [key]: true }));
-          if (yes) setProgression(key, { target: topWeight + inc });
-        };
         const setExpanded = (v: boolean) =>
           setExpandOverride((o) => ({ ...o, [key]: v }));
         return (
@@ -758,28 +744,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               </div>
             </div>
 
-            {askIncrease && (
-              <div className="increase-ask">
-                <div>
-                  💪 All sets done! Add weight to <b>{topWeight + inc} {unit}</b>{' '}
-                  next time?
-                </div>
-                <div className="increase-ask-btns">
-                  <button
-                    className="btn small success grow"
-                    onClick={() => answerIncrease(true)}
-                  >
-                    👍 Yes, +{inc} {unit}
-                  </button>
-                  <button
-                    className="btn small grow"
-                    onClick={() => answerIncrease(false)}
-                  >
-                    Keep same
-                  </button>
-                </div>
-              </div>
-            )}
 
             {!expanded && (
               <div className="ex-collapsed" onClick={() => setExpanded(true)}>
