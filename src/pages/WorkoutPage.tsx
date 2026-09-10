@@ -536,6 +536,16 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
+  // Reorder an exercise within today's workout only — the plan is untouched.
+  const moveExercise = (ei: number, dir: -1 | 1) =>
+    updateActiveWorkout((wk) => {
+      const j = ei + dir;
+      if (j < 0 || j >= wk.exercises.length) return wk;
+      const exercises = [...wk.exercises];
+      [exercises[ei], exercises[j]] = [exercises[j], exercises[ei]];
+      return { ...wk, exercises };
+    });
+
   // Swap an exercise for today only (busy machine, etc.) — re-seed its sets
   // from the substitute's own history, keeping the plan untouched.
   const replaceExercise = (ei: number, newId: string) => {
@@ -701,6 +711,22 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               <div className="row" style={{ gap: 4 }}>
                 {expanded && (
                   <>
+                    <button
+                      className="btn small ghost"
+                      title="Move up (today only)"
+                      disabled={ei === 0}
+                      onClick={() => moveExercise(ei, -1)}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      className="btn small ghost"
+                      title="Move down (today only)"
+                      disabled={ei === w.exercises.length - 1}
+                      onClick={() => moveExercise(ei, 1)}
+                    >
+                      ↓
+                    </button>
                     <button
                       className="btn small ghost"
                       title="Replace for today"

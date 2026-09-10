@@ -543,6 +543,34 @@ describe('app UI', () => {
     expect(screen.getByText('＋ Add set')).toBeTruthy();
   });
 
+  it('reorders exercises within today’s workout only', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('🚀 Start empty workout'));
+
+    const addExercise = (name: string) => {
+      fireEvent.click(screen.getByText('＋ Add exercise'));
+      fireEvent.change(
+        screen.getByPlaceholderText('Search by name or muscle…'),
+        { target: { value: name } },
+      );
+      fireEvent.click(screen.getByText(name));
+    };
+    addExercise('Bench Press (Barbell)');
+    addExercise('Squat (Barbell)');
+
+    const names = () =>
+      screen
+        .getAllByRole('heading', { level: 3 })
+        .map((h) => h.textContent ?? '');
+    expect(names()[0]).toContain('Bench Press');
+    expect(names()[1]).toContain('Squat');
+
+    // move Bench down → Squat rises to the top for today
+    fireEvent.click(screen.getAllByTitle('Move down (today only)')[0]);
+    expect(names()[0]).toContain('Squat');
+    expect(names()[1]).toContain('Bench Press');
+  });
+
   it('asks whether to increase weight after all sets, bumping only on yes', () => {
     renderApp();
     fireEvent.click(screen.getByText('🚀 Start empty workout'));
