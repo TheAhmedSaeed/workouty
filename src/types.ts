@@ -69,6 +69,12 @@ export interface TemplateExercise {
   targetSets: number;
   targetRepsMin: number;
   targetRepsMax: number;
+  /**
+   * Optional exercise: do it only when it makes sense on the day. The workout
+   * screen flags it and shows `notes` so you can decide each time.
+   */
+  optional?: boolean;
+  /** Note shown with the exercise — e.g. when to include an optional one. */
   notes?: string;
 }
 

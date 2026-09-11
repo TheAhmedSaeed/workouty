@@ -471,19 +471,21 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [warmup] = useState(() => buildWarmup(w.exercises, getExercise, unit));
 
   // template day targets, to show "3 × 8–12" next to each exercise
-  const { targets, targetSets } = useMemo(() => {
+  const { targets, targetSets, optionalInfo } = useMemo(() => {
     const t = state.templates.find((x) => x.id === w.templateId);
     const d = t?.days.find((x) => x.id === w.dayId);
     const targets = new Map<string, string>();
     const targetSets = new Map<string, number>();
+    const optionalInfo = new Map<string, string>(); // exerciseId → note (may be '')
     for (const te of d?.exercises ?? []) {
       targets.set(
         te.exerciseId,
         `${te.targetSets} × ${te.targetRepsMin}–${te.targetRepsMax}`,
       );
       targetSets.set(te.exerciseId, te.targetSets);
+      if (te.optional) optionalInfo.set(te.exerciseId, te.notes?.trim() ?? '');
     }
-    return { targets, targetSets };
+    return { targets, targetSets, optionalInfo };
   }, [state.templates, w.templateId, w.dayId]);
 
   const doneSets = w.exercises.reduce(
@@ -684,6 +686,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         ) : null;
         const setExpanded = (v: boolean) =>
           setExpandOverride((o) => ({ ...o, [key]: v }));
+        const isOptional = optionalInfo.has(we.exerciseId);
+        const optNote = optionalInfo.get(we.exerciseId) ?? '';
         return (
           <div
             className={`exercise-block${allDone ? ' complete' : ''}${expanded ? '' : ' collapsed'}`}
@@ -693,6 +697,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               <h3 onClick={() => setInfoFor(we.exerciseId)}>
                 {allDone ? '✅ ' : ''}
                 {ex?.name ?? 'Unknown exercise'} ⓘ
+                {isOptional && <span className="chip optional">Optional</span>}
               </h3>
               <div className="row" style={{ gap: 4 }}>
                 {expanded && (
@@ -744,6 +749,13 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               </div>
             </div>
 
+            {isOptional && expanded && (
+              <div className="optional-note">
+                🔵 <b>Optional</b> — do it only if it makes sense today.
+                {optNote ? ` ${optNote}` : ''} If you skip it, just leave its
+                sets unchecked.
+              </div>
+            )}
 
             {!expanded && (
               <div className="ex-collapsed" onClick={() => setExpanded(true)}>

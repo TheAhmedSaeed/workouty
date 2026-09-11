@@ -201,6 +201,45 @@ export function TemplateEditor({
                     sets × reps
                   </span>
                 </div>
+
+                <label
+                  className="row"
+                  style={{
+                    gap: 6,
+                    marginTop: 8,
+                    alignItems: 'center',
+                    fontSize: '0.85rem',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!!te.optional}
+                    onChange={(e) =>
+                      updateDay(day.id, (d) => ({
+                        ...d,
+                        exercises: d.exercises.map((x, xi) =>
+                          xi === i ? { ...x, optional: e.target.checked } : x,
+                        ),
+                      }))
+                    }
+                  />
+                  🔵 Optional — decide each session
+                </label>
+                {te.optional && (
+                  <input
+                    style={{ marginTop: 6, width: '100%' }}
+                    placeholder="When to do it — e.g. only if 48h until next upper day"
+                    value={te.notes ?? ''}
+                    onChange={(e) =>
+                      updateDay(day.id, (d) => ({
+                        ...d,
+                        exercises: d.exercises.map((x, xi) =>
+                          xi === i ? { ...x, notes: e.target.value } : x,
+                        ),
+                      }))
+                    }
+                  />
+                )}
               </div>
             );
           })}

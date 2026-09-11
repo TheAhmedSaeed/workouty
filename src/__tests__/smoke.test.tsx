@@ -571,6 +571,34 @@ describe('app UI', () => {
     expect(names()[1]).toContain('Bench Press');
   });
 
+  it('tags an exercise optional with a note and surfaces it in the workout', () => {
+    renderApp();
+    // build a manual plan with one exercise
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('🛠️ Build manually'));
+    fireEvent.change(screen.getByPlaceholderText('e.g. Push Pull Legs'), {
+      target: { value: 'Legs' },
+    });
+    fireEvent.click(screen.getByText('＋ Add exercise'));
+    fireEvent.change(screen.getByPlaceholderText('Search by name or muscle…'), {
+      target: { value: 'Dips (Chest)' },
+    });
+    fireEvent.click(screen.getByText('Dips (Chest)'));
+
+    // mark it optional and add a note
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.change(
+      screen.getByPlaceholderText(/When to do it/),
+      { target: { value: 'only if 48h until upper day' } },
+    );
+    fireEvent.click(screen.getByText('Save plan'));
+
+    // start the day → the workout shows the Optional tag and the note
+    fireEvent.click(screen.getAllByText('Start')[0]);
+    expect(screen.getAllByText('Optional').length).toBeGreaterThan(0);
+    expect(screen.getByText(/only if 48h until upper day/)).toBeTruthy();
+  });
+
   it('shows volume but no "add weight next time?" prompt after finishing sets', () => {
     renderApp();
     fireEvent.click(screen.getByText('🚀 Start empty workout'));
