@@ -245,12 +245,6 @@ input::-webkit-inner-spin-button {
   border-color: var(--accent);
   color: var(--accent);
 }
-.chip.optional {
-  background: var(--accent-soft);
-  border-color: transparent;
-  color: var(--accent);
-  vertical-align: middle;
-}
 .optional-note {
   background: var(--accent-soft);
   border: 1px solid var(--border);
@@ -362,6 +356,9 @@ input::-webkit-inner-spin-button {
   margin: 0;
   font-size: 1rem;
   color: var(--accent);
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .exercise-block.collapsed {
   padding: 12px 14px;
@@ -412,12 +409,6 @@ input::-webkit-inner-spin-button {
 .ex-collapsed-vol {
   color: var(--text-faint);
 }
-.ex-collapsed-target {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-/* "increase next time?" prompt shown when an exercise is finished */
 
 /* ── Persistent per-exercise note ───────────────────────── */
 .ex-note {
@@ -453,47 +444,6 @@ input::-webkit-inner-spin-button {
 .ex-note-add {
   margin-bottom: 10px;
   color: var(--text-faint);
-}
-
-/* progression controls inside the exercise info modal */
-.prog-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 0.9rem;
-}
-.prog-step {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.prog-step input {
-  width: 72px;
-  text-align: right;
-}
-.prog-target {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 0.9rem;
-}
-
-/* progression hint on the live workout screen */
-.prog-hint {
-  background: rgba(63, 185, 80, 0.14);
-  color: var(--green);
-  border-radius: 8px;
-  padding: 7px 10px;
-  margin-bottom: 10px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.prog-hint.target {
-  background: var(--accent-soft);
-  color: var(--accent);
 }
 
 .replace-option {

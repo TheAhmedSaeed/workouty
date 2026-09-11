@@ -12,7 +12,6 @@ import {
   workoutSetCount,
   workoutVolume,
 } from '../lib/stats';
-import { nextWeight } from '../lib/progression';
 import { buildWarmup, WarmupStep } from '../lib/warmup';
 import { similarExercises } from '../lib/similar';
 import { workoutRecords, WorkoutRecord } from '../lib/trophies';
@@ -401,7 +400,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     state,
     getExercise,
     exerciseNote,
-    getProgression,
     setSettings,
     updateActiveWorkout,
     finishWorkout,
@@ -549,7 +547,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   // from the substitute's own history, keeping the plan untouched.
   const replaceExercise = (ei: number, newId: string) => {
     const prev = lastPerformance(state.workouts, newId);
-    const tgt = getProgression(newId).target;
     updateActiveWorkout((wk) => ({
       ...wk,
       exercises: wk.exercises.map((e, i) => {
@@ -558,11 +555,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         return {
           exerciseId: newId,
           sets: Array.from({ length: count }, (_, k) => ({
-            weight: nextWeight(prev?.sets[k]?.weight ?? 0, {
-              target: tgt,
-              progress: false,
-              increment: 0,
-            }),
+            weight: prev?.sets[k]?.weight ?? 0,
             reps: hidePrev ? 0 : (prev?.sets[k]?.reps ?? 0),
             completed: false,
             type: 'normal' as const,
@@ -641,10 +634,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         const shownPrev = hidePrev ? null : prev; // what we reveal while logging
         const target = targets.get(we.exerciseId);
         const note = exerciseNote(we.exerciseId);
-        const prog = getProgression(we.exerciseId);
-        const progHint = prog.target
-          ? `🎯 Aim for ${prog.target} ${unit} — hit it to clear this target`
-          : null;
         // hint when last time you did more (or fewer) sets than the plan asks
         const planSets = targetSets.get(we.exerciseId);
         const prevCount = prev && !hidePrev ? prev.sets.length : 0;
@@ -696,10 +685,10 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
             <div className="row between" style={{ marginBottom: expanded ? 4 : 0 }}>
               <h3 onClick={() => setInfoFor(we.exerciseId)}>
                 {allDone ? '✅ ' : ''}
+                {isOptional ? '🔵 ' : ''}
                 {ex?.name ?? 'Unknown exercise'} ⓘ
-                {isOptional && <span className="chip optional">Optional</span>}
               </h3>
-              <div className="row" style={{ gap: 4 }}>
+              <div className="row" style={{ gap: 4, flex: '0 0 auto' }}>
                 {expanded && (
                   <>
                     <button
@@ -769,11 +758,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 {curVol > 0 && (
                   <span className="ex-collapsed-vol">
                     {' · '}📊 {curVol.toLocaleString()} {unit} {volBadge}
-                  </span>
-                )}
-                {prog.target && (
-                  <span className="ex-collapsed-target">
-                    {' · '}🎯 next {prog.target} {unit}
                   </span>
                 )}
               </div>
@@ -848,16 +832,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               >
                 📝 Add note
               </button>
-            )}
-
-            {progHint && (
-              <div
-                className={`prog-hint${prog.target ? ' target' : ''}`}
-                onClick={() => setInfoFor(we.exerciseId)}
-                title="Tap to adjust progression"
-              >
-                {progHint}
-              </div>
             )}
 
             <div className="set-grid header">
@@ -972,7 +946,6 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
           onClose={() => setPicking(false)}
           onPick={(ex) => {
             const prev = lastPerformance(state.workouts, ex.id);
-            const target = getProgression(ex.id).target;
             updateActiveWorkout((wk) => ({
               ...wk,
               exercises: [
@@ -982,11 +955,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                   sets: Array.from(
                     { length: Math.max(prev?.sets.length ?? 3, 1) },
                     (_, i) => ({
-                      weight: nextWeight(prev?.sets[i]?.weight ?? 0, {
-                        target,
-                        progress: false,
-                        increment: 0,
-                      }),
+                      weight: prev?.sets[i]?.weight ?? 0,
                       reps: hidePrev ? 0 : (prev?.sets[i]?.reps ?? 0),
                       completed: false,
                       type: 'normal' as const,
