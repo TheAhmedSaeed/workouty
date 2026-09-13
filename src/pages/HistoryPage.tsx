@@ -108,7 +108,10 @@ export function HistoryPage() {
       {workouts.map((w) => (
         <div className="card clickable" key={w.id} onClick={() => setOpen(w)}>
           <div className="row between">
-            <div style={{ fontWeight: 700 }}>{w.name}</div>
+            <div style={{ fontWeight: 700 }}>
+              {w.name}
+              {w.offDay && <span className="chip" style={{ marginLeft: 6 }}>😮‍💨 Off day</span>}
+            </div>
             <div className="faint">{formatDate(w.startedAt)}</div>
           </div>
           <div className="muted" style={{ marginTop: 4 }}>
@@ -130,6 +133,12 @@ export function HistoryPage() {
             · {Math.round(workoutVolume(open)).toLocaleString()} {unit} total
             {open.restSeconds ? ` · 🛋️ ${formatRest(open.restSeconds)} rest` : ''}
           </div>
+          {open.offDay && (
+            <div className="optional-note" style={{ marginBottom: 12 }}>
+              😮‍💨 Marked as an off day — its numbers aren’t used as the “last
+              time” reference for these exercises.
+            </div>
+          )}
           {open.exercises.map((we, i) => (
             <div className="card" key={i}>
               <div className="row between" style={{ marginBottom: 6 }}>

@@ -412,6 +412,8 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   const [picking, setPicking] = useState(false);
   const [replacing, setReplacing] = useState<number | null>(null);
   const [confirm, setConfirm] = useState<'finish' | 'discard' | null>(null);
+  // "off day" — save the workout but don't use its numbers as next time's ref
+  const [offDay, setOffDay] = useState(false);
   const [infoFor, setInfoFor] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState<{
     sets: number;
@@ -528,7 +530,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
   // Save the finished workout and leave the screen (called from the
   // post-workout celebration's Done button / dismiss).
   const completeWorkout = () => {
-    finishWorkout();
+    finishWorkout({ offDay });
     setCelebrate(null);
     onClose();
   };
@@ -1012,13 +1014,29 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
       {confirm && (
         <Modal
           title={confirm === 'finish' ? 'Finish workout?' : 'Discard workout?'}
-          onClose={() => setConfirm(null)}
+          onClose={() => {
+            setConfirm(null);
+            setOffDay(false);
+          }}
         >
           <p className="muted">
             {confirm === 'finish'
               ? `Save this workout with ${doneSets} completed sets? Sets without a ✓ are not saved.`
               : 'Throw away this workout? Nothing will be saved.'}
           </p>
+          {confirm === 'finish' && (
+            <label className="offday-check">
+              <input
+                type="checkbox"
+                checked={offDay}
+                onChange={(e) => setOffDay(e.target.checked)}
+              />
+              <span>
+                😮‍💨 Off day — not my best. Save it, but don’t use today’s
+                numbers as “last time” next session.
+              </span>
+            </label>
+          )}
           <div className="row">
             <button
               className={`btn grow ${confirm === 'finish' ? 'success' : 'danger'}`}
@@ -1053,14 +1071,20 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 setConfirm(null);
                 if (summary.sets > 0) setCelebrate(summary);
                 else {
-                  finishWorkout();
+                  finishWorkout({ offDay });
                   onClose();
                 }
               }}
             >
               {confirm === 'finish' ? '✓ Finish' : 'Discard'}
             </button>
-            <button className="btn grow" onClick={() => setConfirm(null)}>
+            <button
+              className="btn grow"
+              onClick={() => {
+                setConfirm(null);
+                setOffDay(false);
+              }}
+            >
               Cancel
             </button>
           </div>

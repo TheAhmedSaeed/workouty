@@ -255,6 +255,29 @@ input::-webkit-inner-spin-button {
   line-height: 1.4;
   color: var(--text);
 }
+.offday-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.offday-check input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  flex: 0 0 auto;
+}
+.offday-check span {
+  flex: 1;
+  min-width: 0;
+}
 
 .empty {
   text-align: center;

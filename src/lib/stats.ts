@@ -169,6 +169,7 @@ export function lastPerformance(
   exerciseId: string,
 ): { date: string; sets: { weight: number; reps: number }[] } | null {
   for (let i = workouts.length - 1; i >= 0; i--) {
+    if (workouts[i].offDay) continue; // off days aren't a fair "last time"
     const ex = workouts[i].exercises.find((e) => e.exerciseId === exerciseId);
     if (!ex) continue;
     const working = ex.sets.filter(isWorkingSet);

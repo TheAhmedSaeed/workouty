@@ -93,7 +93,7 @@ interface StoreApi {
   startWorkout: (template?: Template, day?: TemplateDay) => void;
   startEmptyWorkout: () => void;
   updateActiveWorkout: (updater: (w: Workout) => Workout) => void;
-  finishWorkout: () => void;
+  finishWorkout: (opts?: { offDay?: boolean }) => void;
   discardWorkout: () => void;
   deleteWorkout: (id: string) => void;
   // body measurements
@@ -495,12 +495,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const finishWorkout = useCallback(() => {
+  const finishWorkout = useCallback((opts?: { offDay?: boolean }) => {
     setState((st) => {
       if (!st.activeWorkout) return st;
       const finished: Workout = {
         ...st.activeWorkout,
         finishedAt: new Date().toISOString(),
+        offDay: opts?.offDay || undefined,
         // drop exercises where nothing was completed
         exercises: st.activeWorkout.exercises
           .map((e) => ({ ...e, sets: e.sets.filter((s) => s.completed) }))

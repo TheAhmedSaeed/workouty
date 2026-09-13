@@ -133,6 +133,12 @@ export interface Workout {
   exercises: WorkoutExercise[];
   /** Total seconds spent on the rest timer during this workout. */
   restSeconds?: number;
+  /**
+   * Marked as a below-par / off day. Still saved and counted for adherence,
+   * but its numbers are ignored as the "last time" reference so a bad day
+   * doesn't drag down next session's pre-filled weights and hints.
+   */
+  offDay?: boolean;
 }
 
 export type Unit = 'kg' | 'lb';
