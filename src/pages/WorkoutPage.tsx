@@ -1032,8 +1032,9 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 onChange={(e) => setOffDay(e.target.checked)}
               />
               <span>
-                😮‍💨 Off day — not my best. Save it, but don’t use today’s
-                numbers as “last time” next session.
+                😮‍💨 Off day — not my best. Save it, but ignore today’s
+                weaker exercises as “last time” next session. Anything you
+                actually did better still counts.
               </span>
             </label>
           )}

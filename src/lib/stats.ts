@@ -164,22 +164,45 @@ export function exerciseLog(
  * The most recent performance of an exercise — what "last time" looked like.
  * Used to pre-fill sets and show "Previous" hints during a workout.
  */
+/** Best (heaviest, rep-adjusted) working set as an estimated 1RM. */
+function bestSet1RM(sets: { weight: number; reps: number }[]): number {
+  let best = 0;
+  for (const s of sets) best = Math.max(best, estimate1RM(s.weight, s.reps));
+  return best;
+}
+
+/**
+ * The performance to treat as "last time" for an exercise. A normal day always
+ * becomes the reference (it's your standard). A day marked "off" only replaces
+ * the reference if you actually did *better* on that exercise (higher best-set
+ * estimated 1RM) — so a bad day never drags your reference down, but a genuine
+ * improvement on an off day still carries forward to next week.
+ */
 export function lastPerformance(
   workouts: Workout[],
   exerciseId: string,
 ): { date: string; sets: { weight: number; reps: number }[] } | null {
-  for (let i = workouts.length - 1; i >= 0; i--) {
-    if (workouts[i].offDay) continue; // off days aren't a fair "last time"
-    const ex = workouts[i].exercises.find((e) => e.exerciseId === exerciseId);
+  let anchor: { date: string; sets: { weight: number; reps: number }[] } | null =
+    null;
+  let anchorScore = 0;
+  // oldest → newest (workouts are stored newest last)
+  for (let i = 0; i < workouts.length; i++) {
+    const w = workouts[i];
+    const ex = w.exercises.find((e) => e.exerciseId === exerciseId);
     if (!ex) continue;
     const working = ex.sets.filter(isWorkingSet);
     if (working.length === 0) continue;
-    return {
-      date: workouts[i].startedAt,
+    const perf = {
+      date: w.startedAt,
       sets: working.map((s) => ({ weight: s.weight, reps: s.reps })),
     };
+    const score = bestSet1RM(working);
+    if (!w.offDay || anchor === null || score > anchorScore) {
+      anchor = perf;
+      anchorScore = score;
+    }
   }
-  return null;
+  return anchor;
 }
 
 /** Personal record (best estimated 1RM ever) for an exercise. */

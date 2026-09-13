@@ -135,8 +135,9 @@ export function HistoryPage() {
           </div>
           {open.offDay && (
             <div className="optional-note" style={{ marginBottom: 12 }}>
-              😮‍💨 Marked as an off day — its numbers aren’t used as the “last
-              time” reference for these exercises.
+              😮‍💨 Marked as an off day — exercises you did worse on aren’t used
+              as the “last time” reference, but any you did better on still
+              count.
             </div>
           )}
           {open.exercises.map((we, i) => (
