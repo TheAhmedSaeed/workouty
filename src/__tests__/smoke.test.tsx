@@ -314,6 +314,34 @@ describe('custom exercise duplicate check', () => {
     expect(screen.getAllByText(/90 cm/).length).toBeGreaterThan(0);
   });
 
+  it('shows the previous value as "last time" while entering a measurement', () => {
+    renderApp();
+    fireEvent.click(screen.getByText('Body'));
+
+    const openAdd = () =>
+      fireEvent.click(screen.getByRole('button', { name: '＋ Add' }));
+    const waistInput = () =>
+      screen
+        .getByText('Waist (cm)')
+        .parentElement!.querySelector('input[inputmode]') as HTMLInputElement;
+
+    // first entry, back-dated so it counts as an earlier "last time"
+    openAdd();
+    const dateInput = document.querySelector(
+      'input[type="date"]',
+    ) as HTMLInputElement;
+    fireEvent.change(dateInput, { target: { value: '2020-01-01' } });
+    fireEvent.change(waistInput(), { target: { value: '90' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add measurements' }));
+
+    // second entry (today): the waist field now hints last time's value
+    openAdd();
+    expect(screen.getByText(/Last time: 90 cm/)).toBeTruthy();
+    // typing a smaller waist shows the change (progress = down for waist)
+    fireEvent.change(waistInput(), { target: { value: '88' } });
+    expect(screen.getByText(/-2 cm/)).toBeTruthy();
+  });
+
   it('organises plans into folders and can hide a plan', () => {
     renderApp();
     // build a plan

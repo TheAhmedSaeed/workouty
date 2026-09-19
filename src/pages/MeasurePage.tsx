@@ -171,6 +171,7 @@ export function MeasurePage() {
       {editing && (
         <MeasurementModal
           existing={editing === 'new' ? null : editing}
+          measurements={measurements}
           unit={unit}
           lenUnit={lenUnit}
           onClose={() => setEditing(null)}
@@ -195,6 +196,7 @@ export function MeasurePage() {
 
 function MeasurementModal({
   existing,
+  measurements,
   unit,
   lenUnit,
   onClose,
@@ -202,6 +204,7 @@ function MeasurementModal({
   onDelete,
 }: {
   existing: Measurement | null;
+  measurements: Measurement[];
   unit: Unit;
   lenUnit: LengthUnit;
   onClose: () => void;
@@ -230,6 +233,21 @@ function MeasurementModal({
 
   const hasAny = Object.keys(vals).length > 0;
 
+  // The most recent earlier entry that recorded this field, so we can show
+  // "last time" as you type. Respects the chosen date (back-dating works) and
+  // ignores the entry being edited.
+  const lastFor = (k: MeasureKey): { value: number; date: string } | null => {
+    let best: { value: number; date: string } | null = null;
+    for (const m of measurements) {
+      if (existing && m.id === existing.id) continue;
+      if (m.date >= date) continue;
+      const v = m[k];
+      if (typeof v !== 'number') continue;
+      if (!best || m.date > best.date) best = { value: v, date: m.date };
+    }
+    return best;
+  };
+
   return (
     <Modal
       title={existing ? 'Edit measurements' : 'New measurements'}
@@ -254,23 +272,43 @@ function MeasurementModal({
         />
       </label>
 
-      {MEASURE_FIELDS.map((f) => (
-        <div className="form-field" key={f.key}>
-          <label>
-            {f.label} ({measureUnitLabel(f.kind, unit, lenUnit)})
-          </label>
-          <NumberInput
-            value={vals[f.key] ?? ''}
-            placeholder="—"
-            onValue={(n) => setVal(f.key, n)}
-          />
-          {showTips && (
-            <p className="faint" style={{ margin: '4px 0 0' }}>
-              {f.how}
-            </p>
-          )}
-        </div>
-      ))}
+      {MEASURE_FIELDS.map((f) => {
+        const ul = measureUnitLabel(f.kind, unit, lenUnit);
+        const last = lastFor(f.key);
+        const cur = vals[f.key];
+        const delta =
+          last && typeof cur === 'number'
+            ? Math.round((cur - last.value) * 10) / 10
+            : null;
+        return (
+          <div className="form-field" key={f.key}>
+            <label>
+              {f.label} ({ul})
+            </label>
+            <NumberInput
+              value={vals[f.key] ?? ''}
+              placeholder="—"
+              onValue={(n) => setVal(f.key, n)}
+            />
+            {last && (
+              <p className="faint" style={{ margin: '4px 0 0' }}>
+                Last time: {last.value} {ul} ({fmtDate(last.date)})
+                {delta !== null && delta !== 0 && (
+                  <span className={deltaClass(f.good, delta)}>
+                    {' · '}
+                    {fmtDelta(delta)} {ul}
+                  </span>
+                )}
+              </p>
+            )}
+            {showTips && (
+              <p className="faint" style={{ margin: '4px 0 0' }}>
+                {f.how}
+              </p>
+            )}
+          </div>
+        );
+      })}
 
       <div className="form-field">
         <label>Notes (optional)</label>

@@ -861,6 +861,15 @@ input::-webkit-inner-spin-button {
 .trend-badge.bad {
   color: var(--red);
 }
+/* inline change hint (e.g. under a measurement input) */
+.faint .good {
+  color: var(--green);
+  font-weight: 600;
+}
+.faint .bad {
+  color: var(--red);
+  font-weight: 600;
+}
 
 /* ── Trophies ───────────────────────────────────────────── */
 .trophy-grid {
