@@ -15,7 +15,7 @@ import {
 import { buildWarmup, WarmupStep } from '../lib/warmup';
 import { similarExercises } from '../lib/similar';
 import { workoutRecords, WorkoutRecord } from '../lib/trophies';
-import { formatDate, formatRest } from '../lib/utils';
+import { arrayMove, formatDate, formatRest } from '../lib/utils';
 import { DEFAULT_REST_SECONDS, Exercise, MUSCLE_LABELS } from '../types';
 
 // One shared AudioContext, unlocked on a user gesture (ticking a set), so the
@@ -535,15 +535,50 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
-  // Reorder an exercise within today's workout only — the plan is untouched.
-  const moveExercise = (ei: number, dir: -1 | 1) =>
-    updateActiveWorkout((wk) => {
-      const j = ei + dir;
-      if (j < 0 || j >= wk.exercises.length) return wk;
-      const exercises = [...wk.exercises];
-      [exercises[ei], exercises[j]] = [exercises[j], exercises[ei]];
-      return { ...wk, exercises };
-    });
+  // ── Drag-to-reorder (pointer-based, works on touch + mouse) ─────────────
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const blockRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const startDrag = (e: React.PointerEvent, index: number) => {
+    e.preventDefault();
+    setDragIndex(index);
+  };
+
+  // While dragging, swap with the neighbour once the pointer crosses its
+  // midpoint. Window listeners (re-bound each swap) keep tracking even when the
+  // pointer leaves the little grip.
+  useEffect(() => {
+    if (dragIndex === null) return;
+    const onMove = (e: PointerEvent) => {
+      e.preventDefault();
+      const from = dragIndex;
+      const prev =
+        from > 0 ? blockRefs.current[from - 1]?.getBoundingClientRect() : null;
+      const next = blockRefs.current[from + 1]?.getBoundingClientRect();
+      if (prev && e.clientY < prev.top + prev.height / 2) {
+        updateActiveWorkout((wk) => ({
+          ...wk,
+          exercises: arrayMove(wk.exercises, from, from - 1),
+        }));
+        setDragIndex(from - 1);
+      } else if (next && e.clientY > next.top + next.height / 2) {
+        updateActiveWorkout((wk) => ({
+          ...wk,
+          exercises: arrayMove(wk.exercises, from, from + 1),
+        }));
+        setDragIndex(from + 1);
+      }
+    };
+    const onUp = () => setDragIndex(null);
+    window.addEventListener('pointermove', onMove, { passive: false });
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+  }, [dragIndex, updateActiveWorkout]);
 
   // Swap an exercise for today only (busy machine, etc.) — re-seed its sets
   // from the substitute's own history, keeping the plan untouched.
@@ -681,34 +716,34 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
         const optNote = optionalInfo.get(we.exerciseId) ?? '';
         return (
           <div
-            className={`exercise-block${allDone ? ' complete' : ''}${expanded ? '' : ' collapsed'}`}
+            ref={(el) => {
+              blockRefs.current[ei] = el;
+            }}
+            className={`exercise-block${allDone ? ' complete' : ''}${expanded ? '' : ' collapsed'}${dragIndex === ei ? ' dragging' : ''}`}
             key={ei}
           >
             <div className="row between" style={{ marginBottom: expanded ? 4 : 0 }}>
-              <h3 onClick={() => setInfoFor(we.exerciseId)}>
-                {allDone ? '✅ ' : ''}
-                {isOptional ? '🔵 ' : ''}
-                {ex?.name ?? 'Unknown exercise'} ⓘ
-              </h3>
+              <div
+                className="row"
+                style={{ gap: 6, flex: 1, minWidth: 0, alignItems: 'center' }}
+              >
+                <span
+                  className="drag-handle"
+                  title="Drag to reorder"
+                  aria-label="Drag to reorder"
+                  onPointerDown={(e) => startDrag(e, ei)}
+                >
+                  ⠿
+                </span>
+                <h3 onClick={() => setInfoFor(we.exerciseId)}>
+                  {allDone ? '✅ ' : ''}
+                  {isOptional ? '🔵 ' : ''}
+                  {ex?.name ?? 'Unknown exercise'} ⓘ
+                </h3>
+              </div>
               <div className="row" style={{ gap: 4, flex: '0 0 auto' }}>
                 {expanded && (
                   <>
-                    <button
-                      className="btn small ghost"
-                      title="Move up (today only)"
-                      disabled={ei === 0}
-                      onClick={() => moveExercise(ei, -1)}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      className="btn small ghost"
-                      title="Move down (today only)"
-                      disabled={ei === w.exercises.length - 1}
-                      onClick={() => moveExercise(ei, 1)}
-                    >
-                      ↓
-                    </button>
                     <button
                       className="btn small ghost"
                       title="Replace for today"

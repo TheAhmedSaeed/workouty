@@ -375,6 +375,24 @@ input::-webkit-inner-spin-button {
   padding: 14px;
   margin-bottom: 12px;
 }
+.exercise-block.dragging {
+  opacity: 0.6;
+  border-color: var(--accent);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+.drag-handle {
+  flex: 0 0 auto;
+  cursor: grab;
+  touch-action: none; /* let us drag without the page scrolling */
+  user-select: none;
+  color: var(--text-faint);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 2px 2px;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
 .exercise-block h3 {
   margin: 0;
   font-size: 1rem;

@@ -47,6 +47,23 @@ export function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
+/** Return a copy of `list` with the item at `from` moved to index `to`. */
+export function arrayMove<T>(list: T[], from: number, to: number): T[] {
+  if (
+    from === to ||
+    from < 0 ||
+    to < 0 ||
+    from >= list.length ||
+    to >= list.length
+  ) {
+    return list;
+  }
+  const next = [...list];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}
+
 /** ISO week start (Monday) for grouping analytics by week. */
 export function weekStart(date: Date): Date {
   const d = new Date(date);

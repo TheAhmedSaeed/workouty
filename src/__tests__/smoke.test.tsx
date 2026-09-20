@@ -571,7 +571,7 @@ describe('app UI', () => {
     expect(screen.getByText('＋ Add set')).toBeTruthy();
   });
 
-  it('reorders exercises within today’s workout only', () => {
+  it('gives each exercise a drag handle to reorder today’s workout', () => {
     renderApp();
     fireEvent.click(screen.getByText('🚀 Start empty workout'));
 
@@ -586,17 +586,9 @@ describe('app UI', () => {
     addExercise('Bench Press (Barbell)');
     addExercise('Squat (Barbell)');
 
-    const names = () =>
-      screen
-        .getAllByRole('heading', { level: 3 })
-        .map((h) => h.textContent ?? '');
-    expect(names()[0]).toContain('Bench Press');
-    expect(names()[1]).toContain('Squat');
-
-    // move Bench down → Squat rises to the top for today
-    fireEvent.click(screen.getAllByTitle('Move down (today only)')[0]);
-    expect(names()[0]).toContain('Squat');
-    expect(names()[1]).toContain('Bench Press');
+    // one drag-to-reorder handle per exercise (actual dragging needs layout,
+    // which jsdom lacks — the move math is covered by arrayMove's unit tests)
+    expect(screen.getAllByTitle('Drag to reorder').length).toBe(2);
   });
 
   it('tags an exercise optional with a note and surfaces it in the workout', () => {
