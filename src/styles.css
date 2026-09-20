@@ -375,10 +375,31 @@ input::-webkit-inner-spin-button {
   padding: 14px;
   margin-bottom: 12px;
 }
+/* while dragging, the block becomes a "drop here" placeholder in the exact
+   slot the exercise will land in, keeping its full size (no layout jump) */
 .exercise-block.dragging {
-  opacity: 0.6;
-  border-color: var(--accent);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  position: relative;
+  border: 1px dashed var(--accent);
+  background: var(--accent-soft);
+}
+.exercise-block.dragging > *:not(.drag-drop-label) {
+  visibility: hidden;
+}
+.drag-drop-label {
+  display: none;
+}
+.exercise-block.dragging .drag-drop-label {
+  display: flex;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  text-align: center;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 .drag-handle {
   flex: 0 0 auto;

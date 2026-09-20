@@ -722,6 +722,9 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
             className={`exercise-block${allDone ? ' complete' : ''}${expanded ? '' : ' collapsed'}${dragIndex === ei ? ' dragging' : ''}`}
             key={ei}
           >
+            <div className="drag-drop-label" aria-hidden="true">
+              ⠿ {ex?.name ?? 'Exercise'} — drop here
+            </div>
             <div className="row between" style={{ marginBottom: expanded ? 4 : 0 }}>
               <div
                 className="row"
