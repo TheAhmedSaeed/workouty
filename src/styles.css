@@ -733,6 +733,17 @@ input::-webkit-inner-spin-button {
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
+/* compact per-exercise notes (inside an exercise block) */
+.notes-inline {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.notes-inline .notes-title {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
 
 /* ── Weekly adherence tracker ───────────────────────────── */
 .week-card {

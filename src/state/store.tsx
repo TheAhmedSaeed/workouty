@@ -107,7 +107,12 @@ interface StoreApi {
   updateCardio: (id: string, patch: Partial<Omit<CardioSession, 'id'>>) => void;
   deleteCardio: (id: string) => void;
   // workout day notes-to-self
-  addWorkoutNote: (templateId: string, dayId: string, text: string) => void;
+  addWorkoutNote: (
+    templateId: string,
+    dayId: string,
+    text: string,
+    exerciseId?: string,
+  ) => void;
   resolveWorkoutNote: (id: string, resolved: boolean) => void;
   deleteWorkoutNote: (id: string) => void;
   // backup
@@ -591,13 +596,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addWorkoutNote = useCallback(
-    (templateId: string, dayId: string, text: string) => {
+    (templateId: string, dayId: string, text: string, exerciseId?: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
       const note: WorkoutNote = {
         id: uid(),
         templateId,
         dayId,
+        ...(exerciseId ? { exerciseId } : {}),
         text: trimmed,
         date: new Date().toISOString().slice(0, 10),
       };

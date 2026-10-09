@@ -258,11 +258,17 @@ function WorkoutNotes({
   onAdd,
   onResolve,
   onDelete,
+  title = '📌 Notes for next time',
+  placeholder = 'e.g. bump squat to 105 next time',
+  compact = false,
 }: {
   notes: WorkoutNote[];
   onAdd: (text: string) => void;
   onResolve: (id: string) => void;
   onDelete: (id: string) => void;
+  title?: string;
+  placeholder?: string;
+  compact?: boolean;
 }) {
   const [text, setText] = useState('');
   const add = () => {
@@ -272,8 +278,8 @@ function WorkoutNotes({
     setText('');
   };
   return (
-    <div className="notes-panel">
-      <div className="notes-title">📌 Notes for next time</div>
+    <div className={compact ? 'notes-inline' : 'notes-panel'}>
+      <div className="notes-title">{title}</div>
       {notes.length > 0 && (
         <div className="notes-list">
           {notes.map((n) => (
@@ -306,7 +312,7 @@ function WorkoutNotes({
         <input
           className="grow"
           value={text}
-          placeholder="e.g. bump squat to 105 next time"
+          placeholder={placeholder}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && add()}
         />
@@ -751,6 +757,7 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
               (n) =>
                 n.templateId === w.templateId &&
                 n.dayId === w.dayId &&
+                !n.exerciseId &&
                 !n.resolved,
             )
             .sort((a, b) => b.date.localeCompare(a.date))}
@@ -1055,6 +1062,28 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
                 </button>
               )}
             </div>
+
+            {w.templateId && w.dayId && (
+              <WorkoutNotes
+                compact
+                title="📌 Note for next time"
+                placeholder="e.g. went up 2.5kg, try 3×10 next time"
+                notes={(state.workoutNotes ?? [])
+                  .filter(
+                    (n) =>
+                      n.templateId === w.templateId &&
+                      n.dayId === w.dayId &&
+                      n.exerciseId === we.exerciseId &&
+                      !n.resolved,
+                  )
+                  .sort((a, b) => b.date.localeCompare(a.date))}
+                onAdd={(text) =>
+                  addWorkoutNote(w.templateId!, w.dayId!, text, we.exerciseId)
+                }
+                onResolve={(id) => resolveWorkoutNote(id, true)}
+                onDelete={deleteWorkoutNote}
+              />
+            )}
             </>
             )}
           </div>

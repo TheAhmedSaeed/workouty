@@ -236,6 +236,8 @@ export interface WorkoutNote {
   id: string;
   templateId: string;
   dayId: string;
+  /** When set, the note belongs to this exercise rather than the whole day. */
+  exerciseId?: string;
   text: string;
   date: string; // 'YYYY-MM-DD' it was written
   resolved?: boolean;

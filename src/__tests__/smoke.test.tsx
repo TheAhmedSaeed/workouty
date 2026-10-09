@@ -769,13 +769,16 @@ describe('app UI', () => {
     fireEvent.click(screen.getByText('Bench Press (Barbell)'));
     fireEvent.click(screen.getByText('Save plan'));
 
-    // first session: add a note for next time, log a set, finish
+    // first session: add a DAY note + a per-EXERCISE note, log a set, finish
     fireEvent.click(screen.getAllByText('Start')[0]);
-    fireEvent.change(
-      screen.getByPlaceholderText(/bump squat to 105/),
-      { target: { value: 'bump bench to 105' } },
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    const dayInput = screen.getByPlaceholderText(/bump squat to 105/);
+    fireEvent.change(dayInput, { target: { value: 'warm up the knees more' } });
+    fireEvent.keyDown(dayInput, { key: 'Enter' });
+    expect(screen.getByText('warm up the knees more')).toBeTruthy();
+
+    const exInput = screen.getByPlaceholderText(/went up 2.5kg/);
+    fireEvent.change(exInput, { target: { value: 'bump bench to 105' } });
+    fireEvent.keyDown(exInput, { key: 'Enter' });
     expect(screen.getByText('bump bench to 105')).toBeTruthy();
 
     const setInputs = () =>
@@ -789,12 +792,16 @@ describe('app UI', () => {
     fireEvent.click(screen.getByText('✓ Finish'));
     fireEvent.click(screen.getByText('✓ Done'));
 
-    // next session: the note is still there waiting
+    // next session: both notes are still there waiting
     fireEvent.click(screen.getByText('Repeat'));
+    expect(screen.getByText('warm up the knees more')).toBeTruthy();
     expect(screen.getByText('bump bench to 105')).toBeTruthy();
 
-    // mark it done → it disappears
-    fireEvent.click(screen.getByRole('button', { name: '✓ Resolve' }));
+    // resolve them → they disappear
+    const resolves = screen.getAllByRole('button', { name: '✓ Resolve' });
+    expect(resolves.length).toBe(2);
+    resolves.forEach((b) => fireEvent.click(b));
+    expect(screen.queryByText('warm up the knees more')).toBeNull();
     expect(screen.queryByText('bump bench to 105')).toBeNull();
   });
 
