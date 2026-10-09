@@ -17,6 +17,7 @@ import {
   Template,
   TemplateDay,
   Workout,
+  WorkoutNote,
 } from '../types';
 import { EXERCISES, EXERCISE_MAP } from '../data/exercises';
 import { lastPerformance } from '../lib/stats';
@@ -44,6 +45,7 @@ function defaultState(): AppState {
     measurements: [],
     cardio: [],
     exerciseNotes: {},
+    workoutNotes: [],
     deleted: { workouts: [], templates: [] },
   };
 }
@@ -104,6 +106,10 @@ interface StoreApi {
   addCardio: (c: Omit<CardioSession, 'id'>) => void;
   updateCardio: (id: string, patch: Partial<Omit<CardioSession, 'id'>>) => void;
   deleteCardio: (id: string) => void;
+  // workout day notes-to-self
+  addWorkoutNote: (templateId: string, dayId: string, text: string) => void;
+  resolveWorkoutNote: (id: string, resolved: boolean) => void;
+  deleteWorkoutNote: (id: string) => void;
   // backup
   exportData: () => string;
   /** Just your logged workouts, with exercise names + volumes resolved. */
@@ -584,6 +590,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const addWorkoutNote = useCallback(
+    (templateId: string, dayId: string, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const note: WorkoutNote = {
+        id: uid(),
+        templateId,
+        dayId,
+        text: trimmed,
+        date: new Date().toISOString().slice(0, 10),
+      };
+      setState((st) => ({
+        ...st,
+        workoutNotes: [...(st.workoutNotes ?? []), note],
+      }));
+    },
+    [],
+  );
+
+  const resolveWorkoutNote = useCallback((id: string, resolved: boolean) => {
+    setState((st) => ({
+      ...st,
+      workoutNotes: (st.workoutNotes ?? []).map((n) =>
+        n.id === id ? { ...n, resolved } : n,
+      ),
+    }));
+  }, []);
+
+  const deleteWorkoutNote = useCallback((id: string) => {
+    setState((st) => ({
+      ...st,
+      workoutNotes: (st.workoutNotes ?? []).filter((n) => n.id !== id),
+    }));
+  }, []);
+
   const exportData = useCallback(() => JSON.stringify(state, null, 2), [state]);
 
   // Just the workout log, enriched with exercise names + volumes so it's
@@ -642,6 +683,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addCardio,
     updateCardio,
     deleteCardio,
+    addWorkoutNote,
+    resolveWorkoutNote,
+    deleteWorkoutNote,
     exportData,
     exportWorkouts,
     importData,

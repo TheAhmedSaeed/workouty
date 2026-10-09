@@ -227,6 +227,20 @@ export interface Settings {
 /** Default rest-timer length when the user hasn't picked one. */
 export const DEFAULT_REST_SECONDS = 90;
 
+/**
+ * A note-to-self attached to a plan day, written during a workout and shown
+ * the next time you do that day ("bump squat to 105", "the cable felt loose").
+ * It carries the date it was written and sticks around until you resolve it.
+ */
+export interface WorkoutNote {
+  id: string;
+  templateId: string;
+  dayId: string;
+  text: string;
+  date: string; // 'YYYY-MM-DD' it was written
+  resolved?: boolean;
+}
+
 export interface AppState {
   version: 1;
   settings: Settings;
@@ -246,6 +260,8 @@ export interface AppState {
    * excludes the bar" shows up every time you train that exercise.
    */
   exerciseNotes?: Record<string, string>;
+  /** Notes-to-self per plan day, shown next time you do that day. */
+  workoutNotes?: WorkoutNote[];
   /** Tombstones so deletions propagate across synced devices. */
   deleted?: { workouts: string[]; templates: string[] };
 }

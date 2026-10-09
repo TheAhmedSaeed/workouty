@@ -16,7 +16,7 @@ import { buildWarmup, WarmupStep } from '../lib/warmup';
 import { similarExercises } from '../lib/similar';
 import { workoutRecords, WorkoutRecord } from '../lib/trophies';
 import { arrayMove, formatDate, formatRest } from '../lib/utils';
-import { DEFAULT_REST_SECONDS, Exercise, MUSCLE_LABELS } from '../types';
+import { DEFAULT_REST_SECONDS, Exercise, MUSCLE_LABELS, WorkoutNote } from '../types';
 
 // One shared AudioContext, unlocked on a user gesture (ticking a set), so the
 // rest-over chime can still play later when the countdown reaches zero.
@@ -246,6 +246,82 @@ function RestTimer({
   );
 }
 
+const fmtNoteDate = (d: string) => formatDate(`${d}T12:00:00`);
+
+/**
+ * Notes-to-self for this plan day. Jot a reminder today ("bump squat to
+ * 105 next time") and it's saved with today's date; next time you do this
+ * day it shows here so you know what to change, then you mark it done.
+ */
+function WorkoutNotes({
+  notes,
+  onAdd,
+  onResolve,
+  onDelete,
+}: {
+  notes: WorkoutNote[];
+  onAdd: (text: string) => void;
+  onResolve: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [text, setText] = useState('');
+  const add = () => {
+    const t = text.trim();
+    if (!t) return;
+    onAdd(t);
+    setText('');
+  };
+  return (
+    <div className="notes-panel">
+      <div className="notes-title">📌 Notes for next time</div>
+      {notes.length > 0 && (
+        <div className="notes-list">
+          {notes.map((n) => (
+            <div className="note-item" key={n.id}>
+              <div className="grow" style={{ minWidth: 0 }}>
+                <div className="note-text">{n.text}</div>
+                <div className="faint" style={{ fontSize: '0.75rem' }}>
+                  {fmtNoteDate(n.date)}
+                </div>
+              </div>
+              <button
+                className="btn small success"
+                title="Mark as done"
+                onClick={() => onResolve(n.id)}
+              >
+                ✓ Resolve
+              </button>
+              <button
+                className="btn small danger ghost"
+                title="Delete note"
+                onClick={() => onDelete(n.id)}
+              >
+                🗑
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="row" style={{ gap: 6, marginTop: notes.length ? 10 : 6 }}>
+        <input
+          className="grow"
+          value={text}
+          placeholder="e.g. bump squat to 105 next time"
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+        />
+        <button
+          className="btn small primary"
+          disabled={!text.trim()}
+          onClick={add}
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Collapsible, tailored warm-up shown at the top of the session: a clear
  * checklist of cardio, mobility for today's muscles, and ramp-up sets.
@@ -404,6 +480,9 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
     updateActiveWorkout,
     finishWorkout,
     discardWorkout,
+    addWorkoutNote,
+    resolveWorkoutNote,
+    deleteWorkoutNote,
   } = useStore();
   const w = state.activeWorkout!;
   const unit = state.settings.unit;
@@ -664,6 +743,23 @@ export function WorkoutPage({ onClose }: { onClose: () => void }) {
       </div>
 
       <WarmupPanel steps={warmup} />
+
+      {w.templateId && w.dayId && (
+        <WorkoutNotes
+          notes={(state.workoutNotes ?? [])
+            .filter(
+              (n) =>
+                n.templateId === w.templateId &&
+                n.dayId === w.dayId &&
+                !n.resolved,
+            )
+            .sort((a, b) => b.date.localeCompare(a.date))}
+          onAdd={(text) => addWorkoutNote(w.templateId!, w.dayId!, text)}
+          onResolve={(id) => resolveWorkoutNote(id, true)}
+          onDelete={deleteWorkoutNote}
+        />
+      )}
+
 
       {w.exercises.map((we, ei) => {
         const ex = getExercise(we.exerciseId);

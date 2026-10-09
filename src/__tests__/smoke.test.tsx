@@ -540,7 +540,11 @@ describe('app UI', () => {
     fireEvent.click(screen.getByText('✓ Save this plan'));
     fireEvent.click(screen.getAllByText('Start')[0]);
 
-    const nums = () => screen.getAllByRole('textbox') as HTMLInputElement[];
+    // set inputs are the numeric ones (inputmode); skip the notes text field
+    const nums = () =>
+      (screen.getAllByRole('textbox') as HTMLInputElement[]).filter((i) =>
+        i.hasAttribute('inputmode'),
+      );
     // first exercise's first-set weight is the very first number input
     fireEvent.change(nums()[0], { target: { value: '60' } });
     // the same weight should now appear in at least one later set
@@ -654,7 +658,10 @@ describe('app UI', () => {
     fireEvent.click(screen.getByText('✓ Save this plan'));
     fireEvent.click(screen.getAllByText('Start')[0]);
 
-    const first = screen.getAllByRole('textbox')[0] as HTMLInputElement;
+    // the first numeric set input (skip the notes text field)
+    const first = (screen.getAllByRole('textbox') as HTMLInputElement[]).find(
+      (i) => i.hasAttribute('inputmode'),
+    ) as HTMLInputElement;
     fireEvent.change(first, { target: { value: '١٢٠' } }); // 120 in Arabic-Indic
     expect(first.value).toBe('120');
   });
@@ -703,7 +710,11 @@ describe('app UI', () => {
 
     // first session: log 60kg x 8
     fireEvent.click(screen.getAllByText('Start')[0]);
-    const inputs = screen.getAllByRole('textbox');
+    const setInputs = () =>
+      (screen.getAllByRole('textbox') as HTMLInputElement[]).filter((i) =>
+        i.hasAttribute('inputmode'),
+      );
+    const inputs = setInputs();
     fireEvent.change(inputs[0], { target: { value: '60' } });
     fireEvent.change(inputs[1], { target: { value: '8' } });
     fireEvent.click(screen.getAllByText('✓')[0]);
@@ -717,7 +728,7 @@ describe('app UI', () => {
     expect(screen.getByText('60 kg × 8')).toBeTruthy();
     // hint that last time's set count differed from the plan (1 done vs 3)
     expect(screen.getByText(/Last time you did 1 sets \(plan: 3\)/)).toBeTruthy();
-    const prefilled = screen.getAllByRole('textbox') as HTMLInputElement[];
+    const prefilled = setInputs();
     expect(prefilled[0].value).toBe('60');
     expect(prefilled[1].value).toBe('8');
 
@@ -738,9 +749,53 @@ describe('app UI', () => {
     // the previous reps/weight readout is now hidden, reps are not pre-filled
     expect(screen.queryByText('60 kg × 8')).toBeNull();
     expect(screen.queryByText(/Last time \(/)).toBeNull();
-    const hidden = screen.getAllByRole('textbox') as HTMLInputElement[];
+    const hidden = setInputs();
     expect(hidden[0].value).toBe('60'); // weight still pre-filled
     expect(hidden[1].value).toBe(''); // reps blanked so they don't anchor
+  });
+
+  it('keeps a note-to-self and shows it next time you do that day', () => {
+    renderApp();
+    // tiny manual plan
+    fireEvent.click(screen.getByRole('button', { name: '＋ New plan' }));
+    fireEvent.click(screen.getByText('🛠️ Build manually'));
+    fireEvent.change(screen.getByPlaceholderText('e.g. Push Pull Legs'), {
+      target: { value: 'Mini' },
+    });
+    fireEvent.click(screen.getByText('＋ Add exercise'));
+    fireEvent.change(screen.getByPlaceholderText('Search by name or muscle…'), {
+      target: { value: 'Bench Press (Barbell)' },
+    });
+    fireEvent.click(screen.getByText('Bench Press (Barbell)'));
+    fireEvent.click(screen.getByText('Save plan'));
+
+    // first session: add a note for next time, log a set, finish
+    fireEvent.click(screen.getAllByText('Start')[0]);
+    fireEvent.change(
+      screen.getByPlaceholderText(/bump squat to 105/),
+      { target: { value: 'bump bench to 105' } },
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    expect(screen.getByText('bump bench to 105')).toBeTruthy();
+
+    const setInputs = () =>
+      (screen.getAllByRole('textbox') as HTMLInputElement[]).filter((i) =>
+        i.hasAttribute('inputmode'),
+      );
+    fireEvent.change(setInputs()[0], { target: { value: '100' } });
+    fireEvent.change(setInputs()[1], { target: { value: '8' } });
+    fireEvent.click(screen.getAllByText('✓')[0]);
+    fireEvent.click(screen.getByText('✓ Finish workout'));
+    fireEvent.click(screen.getByText('✓ Finish'));
+    fireEvent.click(screen.getByText('✓ Done'));
+
+    // next session: the note is still there waiting
+    fireEvent.click(screen.getByText('Repeat'));
+    expect(screen.getByText('bump bench to 105')).toBeTruthy();
+
+    // mark it done → it disappears
+    fireEvent.click(screen.getByRole('button', { name: '✓ Resolve' }));
+    expect(screen.queryByText('bump bench to 105')).toBeNull();
   });
 
   it('exports the exercise list with target muscles', () => {

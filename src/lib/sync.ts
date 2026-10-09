@@ -117,6 +117,11 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
       new Set(),
     ),
     cardio: unionById(local.cardio ?? [], remote.cardio ?? [], new Set()),
+    workoutNotes: unionById(
+      local.workoutNotes ?? [],
+      remote.workoutNotes ?? [],
+      new Set(),
+    ),
     // per-exercise notes: union the maps, local wins on a per-exercise conflict
     exerciseNotes: { ...(remote.exerciseNotes ?? {}), ...(local.exerciseNotes ?? {}) },
     deleted: {
