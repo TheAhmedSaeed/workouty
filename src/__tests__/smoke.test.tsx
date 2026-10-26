@@ -609,8 +609,12 @@ describe('app UI', () => {
     });
     fireEvent.click(screen.getByText('Dips (Chest)'));
 
-    // mark it optional and add a note
-    fireEvent.click(screen.getByRole('checkbox'));
+    // mark the exercise optional (not the day) and add a note
+    const exOptional = screen
+      .getByText(/Optional — decide each session/)
+      .closest('label')!
+      .querySelector('input')!;
+    fireEvent.click(exOptional);
     fireEvent.change(
       screen.getByPlaceholderText(/When to do it/),
       { target: { value: 'only if 48h until upper day' } },

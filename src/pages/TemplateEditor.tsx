@@ -99,6 +99,25 @@ export function TemplateEditor({
             </button>
           </div>
 
+          <label
+            className="row"
+            style={{
+              gap: 6,
+              marginBottom: 10,
+              alignItems: 'center',
+              fontSize: '0.85rem',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={!!day.optional}
+              onChange={(e) =>
+                updateDay(day.id, (d) => ({ ...d, optional: e.target.checked }))
+              }
+            />
+            ⭐ Optional day — bonus, doesn’t count toward your weekly target
+          </label>
+
           {day.exercises.map((te, i) => {
             const ex = getExercise(te.exerciseId);
             return (

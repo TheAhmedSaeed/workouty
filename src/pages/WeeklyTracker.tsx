@@ -19,6 +19,10 @@ export function ThisWeekCard({
   const week = weekAdherence(workouts, plan, weekStartSunday(new Date()));
   const hit = week.done >= week.target && week.target > 0;
   const done = new Set(week.doneDayIds);
+  const optionalIds = new Set(
+    plan.days.filter((d) => d.optional).map((d) => d.id),
+  );
+  const bonusDone = [...done].filter((id) => optionalIds.has(id)).length;
 
   return (
     <div className={`week-card${hit ? ' hit' : ''}`}>
@@ -40,9 +44,10 @@ export function ThisWeekCard({
         {plan.days.map((d) => (
           <span
             key={d.id}
-            className={`week-day${done.has(d.id) ? ' done' : ''}`}
+            className={`week-day${done.has(d.id) ? ' done' : ''}${d.optional ? ' bonus' : ''}`}
           >
             {done.has(d.id) ? '✓' : '○'} {d.name}
+            {d.optional ? ' ⭐' : ''}
           </span>
         ))}
       </div>
@@ -51,6 +56,7 @@ export function ThisWeekCard({
           {hit
             ? '🎉 All workouts done this week!'
             : `${week.target - week.done} to go this week`}
+          {bonusDone > 0 ? ` · +${bonusDone} bonus ⭐` : ''}
         </span>
         <button className="btn small" onClick={onOpenHistory}>
           📈 Weekly history
@@ -75,12 +81,18 @@ export function WeeklyHistoryModal({
   const avg = weeks.length
     ? Math.round((weeks.reduce((s, w) => s + w.done, 0) / weeks.length) * 10) / 10
     : 0;
+  const requiredDays = plan.days.filter((d) => !d.optional).length;
+  const optionalDays = plan.days.length - requiredDays;
 
   return (
     <Modal title="Weekly adherence" onClose={onClose}>
       <p className="muted" style={{ marginTop: 0 }}>
-        Target: <b>{plan.days.length}</b> workouts/week — the days in “{plan.name}
-        ”. Weeks run Sunday → Saturday.
+        Target: <b>{requiredDays}</b> workout{requiredDays === 1 ? '' : 's'}/week —
+        the required days in “{plan.name}”.
+        {optionalDays > 0
+          ? ` ${optionalDays} optional day${optionalDays === 1 ? '' : 's'} don’t count toward the target.`
+          : ''}{' '}
+        Weeks run Sunday → Saturday.
       </p>
       <div className="stat-grid" style={{ marginBottom: 10 }}>
         <div className="stat-box">

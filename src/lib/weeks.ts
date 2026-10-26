@@ -81,6 +81,10 @@ export function weekAdherence(
   const start = weekStart.getTime();
   const end = start + 7 * 86400000;
   const planDayIds = new Set(plan.days.map((d) => d.id));
+  // optional days are a bonus — they don't count toward the weekly target
+  const optionalDayIds = new Set(
+    plan.days.filter((d) => d.optional).map((d) => d.id),
+  );
   const done = new Set<string>();
   for (const w of workouts) {
     const t = new Date(w.startedAt).getTime();
@@ -88,13 +92,15 @@ export function weekAdherence(
     if (w.templateId !== plan.id || !w.dayId) continue;
     if (planDayIds.has(w.dayId)) done.add(w.dayId);
   }
+  // count only required days toward "achieved"; keep all done ids for the UI
+  const doneRequired = [...done].filter((id) => !optionalDayIds.has(id));
   return {
     start: weekStart.toISOString().slice(0, 10),
     weekNo: weekOfYear(weekStart),
     label: weekLabel(weekStart),
     range: weekRangeLabel(weekStart),
-    target: plan.days.length,
-    done: done.size,
+    target: plan.days.filter((d) => !d.optional).length,
+    done: doneRequired.length,
     doneDayIds: [...done],
   };
 }

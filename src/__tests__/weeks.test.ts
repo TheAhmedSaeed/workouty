@@ -66,6 +66,19 @@ describe('weekAdherence', () => {
     expect(s.doneDayIds.sort()).toEqual(['a', 'b']);
     expect(s.label).toBe('August week 1');
   });
+
+  it('excludes optional days from the target and the achieved count', () => {
+    // day "d" is an optional/bonus day
+    const planOpt: Template = {
+      ...plan,
+      days: [day('a'), day('b'), day('c'), { ...day('d'), optional: true }],
+    };
+    const workouts = [w('a', 3), w('d', 4)]; // did a required day + the bonus day
+    const s = weekAdherence(workouts, planOpt, new Date(2026, 7, 2));
+    expect(s.target).toBe(3); // only the 3 required days
+    expect(s.done).toBe(1); // the optional day doesn't count toward achieved
+    expect(s.doneDayIds.sort()).toEqual(['a', 'd']); // but it's still tracked for the UI
+  });
 });
 
 describe('recentWeeks', () => {

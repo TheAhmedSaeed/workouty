@@ -82,6 +82,11 @@ export interface TemplateDay {
   id: string;
   name: string; // e.g. "Push", "Upper A"
   exercises: TemplateExercise[];
+  /**
+   * Optional day: doing it is a bonus, so it's excluded from the weekly
+   * adherence target (it doesn't count toward or against "achieved").
+   */
+  optional?: boolean;
 }
 
 /** A program / plan, e.g. "Push Pull Legs". */
