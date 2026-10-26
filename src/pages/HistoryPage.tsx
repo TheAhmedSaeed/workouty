@@ -4,6 +4,7 @@ import { Modal } from '../components/Modal';
 import { exerciseVolume, workoutSetCount, workoutVolume } from '../lib/stats';
 import { formatDate, formatDuration, formatRest, formatTime } from '../lib/utils';
 import { dateKey, monthMatrix, workoutsByDay } from '../lib/calendar';
+import { HistoryExportModal } from './HistoryExportModal';
 import { Workout } from '../types';
 
 const MONTHS = [
@@ -17,6 +18,7 @@ export function HistoryPage() {
   const unit = state.settings.unit;
   const [open, setOpen] = useState<Workout | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Workout | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const [cursor, setCursor] = useState(() => {
     const n = new Date();
     return { year: n.getFullYear(), month: n.getMonth() };
@@ -41,7 +43,17 @@ export function HistoryPage() {
 
   return (
     <div>
-      <div className="page-title">History</div>
+      <div className="page-title">
+        History
+        {state.workouts.length > 0 && (
+          <button
+            className="btn small"
+            onClick={() => setExportOpen(true)}
+          >
+            📤 Export
+          </button>
+        )}
+      </div>
 
       {state.workouts.length > 0 && (
         <div className="cal">
@@ -170,6 +182,15 @@ export function HistoryPage() {
             Delete workout
           </button>
         </Modal>
+      )}
+
+      {exportOpen && (
+        <HistoryExportModal
+          workouts={state.workouts}
+          unit={unit}
+          getExercise={getExercise}
+          onClose={() => setExportOpen(false)}
+        />
       )}
 
       {confirmDelete && (
